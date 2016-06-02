@@ -1,6 +1,6 @@
 #!/bin/bash
 
-abk_len=4
+abk_len=10
 
 shopt -s nullglob
 file_array=(*)
@@ -32,12 +32,12 @@ do
 
   #echo $dir_name:
   #echo ${file_array[@]:${num_elems[$(($i - 1))]}:${num_elems[$i]}}
-  mkdir -p $dir_name
+  mkdir -p "$dir_name"
   for j in $(seq $first_elem_ind $last_elem_ind)
   do
     #echo mv "${file_array[$j]}" "$dir_name"
     mv "${file_array[$j]}" "$dir_name"
   done
   #mv ${file_array[@]:${num_elems[$(($i - 1))]}:${num_elems[$i]}} "$dir_name"
-  (cd $dir_name ; $0)
+  (cd "$dir_name" ; $0)
 done
