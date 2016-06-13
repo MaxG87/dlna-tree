@@ -11,21 +11,19 @@ num_elems=${#file_array[@]}
 viertel=$((num_elems / 4))
 rest=$((num_elems % 4))
 
-num_elems[0]=0;
+cur_ind=0;
 for i in {1..4}
 do
+  prev_ind=$cur_ind
   if [[ $rest -ge $i ]]
   then
-    num_elems[$i]=$((${num_elems[$(($i - 1))]} + $viertel + 1));
+    cur_ind=$(($prev_ind + $viertel + 1));
   else
-    num_elems[$i]=$((${num_elems[$(($i - 1))]} + $viertel));
+    cur_ind=$(($prev_ind + $viertel));
   fi
-done
 
-for i in {1..4}
-do
-  first_elem_ind=${num_elems[$(($i - 1))]}
-  last_elem_ind=$((${num_elems[$i]} - 1))
+  first_elem_ind=$prev_ind
+  last_elem_ind=$(($cur_ind - 1))
   first_elem=${file_array[$first_elem_ind]}
   last_elem=${file_array[$last_elem_ind]}
   dir_name=${first_elem:0:$abk_len}-${last_elem:0:$abk_len}
