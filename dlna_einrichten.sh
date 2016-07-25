@@ -2,6 +2,7 @@
 
 #Konstanten definieren
 dlna_dir=/media/Daten/DLNA
+liste_dir=$dlna_dir/1_Liste
 musik_dir=/media/Daten/Musik
 IFS=$(echo -en "\n\b")
 
@@ -11,9 +12,9 @@ rm -rf $dlna_dir
 mkdir $dlna_dir
 
 #DLNA-Inhalte verlinken
-cp -rl $musik_dir $dlna_dir/1_Liste
+cp -rl "$musik_dir" "$liste_dir"
 mkdir $dlna_dir/0_Baum
-for it in $dlna_dir/1_Liste/*
+for it in "$liste_dir"/*
 do
   cur_dir="$(basename "$it")"
   ln -s "$it" "$dlna_dir/0_Baum/$cur_dir"
@@ -24,7 +25,7 @@ done
 
 #Zufällige Ordner verlinken
 num_rand_dir=6
-shuf_arr=($(find $musik_dir -iregex '.*\(ogg\|mp3\|flac\|wma\)' -print0 | xargs -0 dirname | sort -u | shuf -n$num_rand_dir))
+shuf_arr=($(find "$liste_dir" -iregex '.*\(ogg\|mp3\|flac\|wma\)' -print0 | xargs -0 dirname | sort -u | shuf -n$num_rand_dir))
 for it in $(seq 0 $(($num_rand_dir - 1)))
 do
   pre_number=$(($it + 2))
