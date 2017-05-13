@@ -26,12 +26,13 @@ def main():
   cur_ind = 0
   for cur_ratio in ratios:
     elems_to_take = int(cur_ratio*num_elems)
-    print("Would move from '", folder_list[cur_ind], "' to '",
-          folder_list[cur_ind+elems_to_take-1] ,"'.")
+    last_ind = cur_ind + elems_to_take - 1 # inclusive range
 
-    branch_name = "Br" + str(cur_ind)
+    branch_name = '{first_folder}_{last_folder}'.format(
+                   first_folder=folder_list[cur_ind][:abk_len],
+                   last_folder=folder_list[last_ind][:abk_len])
     os.mkdir(branch_name)
-    for folder in folder_list[cur_ind:(cur_ind + elems_to_take)]:
+    for folder in folder_list[cur_ind:(last_ind + 1)]:
         shutil.move(folder, branch_name)
         
     cur_ind += elems_to_take
