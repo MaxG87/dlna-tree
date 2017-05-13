@@ -52,7 +52,7 @@ def main():
     # FIXME This is bash style recursion. It must be done better!
     cwd = os.getcwd()
     os.chdir(branch_name)
-    subprocess.run(os.path.join(cwd, sys.argv[0]))
+    subprocess.call(os.path.join(cwd, sys.argv[0]))
     os.chdir(cwd)
 
 
