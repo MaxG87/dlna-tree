@@ -5,7 +5,7 @@ import shutil
 
 
 def main():
-  abk_len = 10
+  len_of_shortcut = 10
   max_branching_factor = 4
   folder_list = os.listdir('.')
 
@@ -29,8 +29,8 @@ def main():
     last_ind = cur_ind + elems_to_take - 1 # inclusive range
 
     branch_name = '{first_folder}_{last_folder}'.format(
-                   first_folder=folder_list[cur_ind][:abk_len],
-                   last_folder=folder_list[last_ind][:abk_len])
+                   first_folder=folder_list[cur_ind][:len_of_shortcut],
+                   last_folder=folder_list[last_ind][:len_of_shortcut])
     os.mkdir(branch_name)
     for folder in folder_list[cur_ind:(last_ind + 1)]:
         shutil.move(folder, branch_name)
