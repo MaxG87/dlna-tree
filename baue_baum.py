@@ -17,8 +17,12 @@ def main():
     exit()
 
   # TODO: implement custom weight per folder
-  costs = [1]*max_branching_factor
-  s_costs = sum(costs)
+  wrap_around = True # TODO move to function signature
+  if wrap_around:
+      costs = [1] + [min(n, max_branching_factor - n) + 1
+                     for n in range(1, max_branching_factor)]
+  else:
+      costs = range(1, max_branching_factor+1)
   # Requirements:
   #   sum(ratios) == 1
   #   ∀i,j: ratios[i]/ratios[j] = costs[j] / costs[i]
