@@ -1,0 +1,41 @@
+Eigentlich gesucht ist ein Baum, der nur Werte auf den Blättern hat und die
+durchschnittliche Zugriffszeit minimiert. Hierbei ist eigentlich auch egal,
+welchen Verzweigungsfaktor der Baum hat, solange er eben nur die
+durchschnittliche Zugriffszeit minimiert. Leider ist momentan noch nicht klar,
+wie dies formuliert werden kann. Deswegen wird weiter unten ein dezent anderes
+Problem gelöst.
+
+
+Stattdessen wird ein Platzhalterproblem gelöst. Auch hier soll die
+durchschnittliche Zugriffszeit formuliert werden, unter folgenden
+Nebenbedingungen:
+
+  * Werte (Musikordner) nur in den Blättern
+  * Verzweigungsfaktor == N (N fix)
+  * Blätter alphabetisch sortiert
+  * Sei w = Σ w_i die Summe der Einzelgewichte der Ordner. Seien c_i, i = 1…N,
+    die Zugriffskosten (z.B. Tastendrücke) für die entsprechenden Teilbäume.
+    Seien α_i, i = 1…N die Anteile am Gesamtgewicht, die in den einzelnen
+    Teilbäumen liegen. Dann gilt:
+
+      1) Σ α_i = 1
+      2) ∀ i,j: α_i/α_j = (c_j)/(c_i)
+
+Die obigen Bedingungen sind erfüllt durch β_i = (c_i)^{-1} und
+α_i = β_i / Σ β_j.
+
+
+Detailprobleme:
+  Bei der Frage, wie viele Ordner noch in einen Teilbaum kommen, muss
+  abgerundet werden. Dies wird deutlich an folgendem Beispiel:
+    Sei [ε, ε, w, ε, ε] eine Liste von Gewichten. Sei c_1 = … = c_4 = 1. Dann
+    ist der optimale Teilbaum [[ε, ε], w, ε, ε]. Bezüglich der obigen Formel
+    jedoch müsste in den ersten Teilbaum der Anteil α_1 = 1/4. Mit Aufrundung
+    ergäbe sich jedoch [[ε, ε, w], ε, ε] als Baum, was deutlich schlechter als
+    nötig ist.
+
+  Seien die Gewichte w = [ε, ε …, ε, w] und die Kosten c = [1, x, …, 1]. Dann
+  wäre die optimale Aufteilung [[ε, …], …, w]. Allerdings würde dies nicht
+  erreicht, wenn jeder Teilbaum gierig gefüllt würde. Dann ergäbe sich nämlich
+  [[ε, …], w]. Dies ist offensichtlich schlechter, da die Zugriffe auf die
+  ε-Elemente teurer werden, die für das w-Element sich jedoch nicht verändern.
