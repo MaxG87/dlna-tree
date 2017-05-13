@@ -2,6 +2,8 @@
 
 import os
 import shutil
+import subprocess
+import sys
 
 
 def main():
@@ -38,9 +40,14 @@ def main():
     os.mkdir(branch_name)
     for folder in folder_list[cur_ind:(last_ind + 1)]:
         shutil.move(folder, branch_name)
-
     cur_ind += elems_to_take
 
+    # Call script recursively
+    # FIXME This is bash style recursion. It must be done better!
+    cwd = os.getcwd()
+    os.chdir(branch_name)
+    subprocess.run(os.path.join(cwd, sys.argv[0]))
+    os.chdir(cwd)
 
 
 if __name__ == "__main__":
