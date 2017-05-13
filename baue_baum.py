@@ -22,7 +22,9 @@ def main():
   # Requirements:
   #   sum(ratios) == 1
   #   ∀i,j: ratios[i]/ratios[j] = costs[j] / costs[i]
-  ratios = [1/(cc * s_costs) for cc in costs]
+  ratios_unnormed = [1/c for c in costs]
+  ratios = [r/sum(ratios_unnormed) for r in ratios_unnormed]
+  assert(abs(sum(ratios) - 1) < 1e-6)
 
   # move folders to subfolders
   cur_ind = 0
