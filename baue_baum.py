@@ -24,9 +24,13 @@ def main():
 
   # move folders to subfolders
   cur_ind = 0
-  for cur_ratio in ratios:
-    elems_to_take = int(cur_ratio*num_elems)
-    last_ind = cur_ind + elems_to_take - 1 # inclusive range
+  for num, cur_ratio in enumerate(ratios):
+    elems_to_take = round(cur_ratio*num_elems)
+    # 1st make sure to take all elements in last iteration
+    last_ind = (cur_ind + elems_to_take - 1 if num < len(ratios) - 1
+                else num_elems - 1) # inclusive range
+    # 2nd make sure not to take too much elements
+    last_ind = min(last_ind, num_elems - 1)
 
     branch_name = '{first_folder}_{last_folder}'.format(
                    first_folder=folder_list[cur_ind][:len_of_shortcut],
@@ -34,7 +38,7 @@ def main():
     os.mkdir(branch_name)
     for folder in folder_list[cur_ind:(last_ind + 1)]:
         shutil.move(folder, branch_name)
-        
+
     cur_ind += elems_to_take
 
 
