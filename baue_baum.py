@@ -36,11 +36,12 @@ def main():
   # move folders to subfolders
   cur_ind = 0
   for num, cur_ratio in enumerate(ratios):
-    elems_to_take = round(cur_ratio*num_elems)
-    # 1st make sure to take all elements in last iteration
+    # 1st Take at least one element!
+    elems_to_take = max(1, round(cur_ratio*num_elems))
+    # 2nd make sure to take all elements in last iteration
     last_ind = (cur_ind + elems_to_take - 1 if num < len(ratios) - 1
                 else num_elems - 1) # inclusive range
-    # 2nd make sure not to take too much elements
+    # 3rd make sure not to take too much elements
     last_ind = min(last_ind, num_elems - 1)
 
     branch_name = '{first_folder}_{last_folder}'.format(
