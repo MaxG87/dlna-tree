@@ -44,6 +44,12 @@ def main():
     # 3rd make sure not to take too much elements
     last_ind = min(last_ind, num_elems - 1)
 
+    if cur_ind == last_ind: # last_ind is inclusive!
+        # If the subfolder would hold only one elment it is better to not
+        # create it.
+        cur_ind += elems_to_take
+        continue
+
     branch_name = '{first_folder}_{last_folder}'.format(
                    first_folder=folder_list[cur_ind][:len_of_shortcut],
                    last_folder=folder_list[last_ind][:len_of_shortcut])
