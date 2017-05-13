@@ -26,13 +26,19 @@ Die obigen Bedingungen sind erfüllt durch β_i = (c_i)^{-1} und
 
 
 Detailprobleme:
-  Bei der Frage, wie viele Ordner noch in einen Teilbaum kommen, muss
-  abgerundet werden. Dies wird deutlich an folgendem Beispiel:
+  Bei der Frage, wie viele Ordner noch in einen Teilbaum kommen, darf nicht
+  gierig aufgerundet werden. Dies wird deutlich an folgendem Beispiel:
     Sei [ε, ε, w, ε, ε] eine Liste von Gewichten. Sei c_1 = … = c_4 = 1. Dann
     ist der optimale Teilbaum [[ε, ε], w, ε, ε]. Bezüglich der obigen Formel
     jedoch müsste in den ersten Teilbaum der Anteil α_1 = 1/4. Mit Aufrundung
     ergäbe sich jedoch [[ε, ε, w], ε, ε] als Baum, was deutlich schlechter als
     nötig ist.
+  Es scheint jedoch, als ob mathematisches Runden unproblematisch ist und zu
+  besseren Bäumen führt, als striktes Abrunden.
+
+  Das obige Beispiel zeigt ein weiteres Problem auf. Momentan würde aus
+  [ε, ε, w, ε, ε] nämlich [[ε, ε], w, [ε, ε]] konstruiert, was nicht optimal
+  ist. Dies muss noch verbessert werden.
 
   Seien die Gewichte w = [ε, ε …, ε, w] und die Kosten c = [1, x, …, 1]. Dann
   wäre die optimale Aufteilung [[ε, …], …, w]. Allerdings würde dies nicht
