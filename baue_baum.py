@@ -1,15 +1,18 @@
 #!/usr/bin/python3
 
+import locale
 import os
 import shutil
 import subprocess
 import sys
+from functools import cmp_to_key
 
 
 def main():
+  locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
   len_of_shortcut = 10
   max_branching_factor = 4
-  folder_list = os.listdir('.')
+  folder_list = sorted(os.listdir('.'), key=cmp_to_key(locale.strcoll))
 
   num_elems = len(folder_list)
   if num_elems <= max_branching_factor:
