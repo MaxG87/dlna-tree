@@ -30,9 +30,13 @@ def setup_node(cwd):
 
   # move folders to subfolders
   cur_ind = 0
+  rescale_ratio = 1
   for num, cur_ratio in enumerate(ratios):
-    # 1st Take at least one element!
-    elems_to_take = max(1, round(cur_ratio*num_elems))
+    assert(abs(sum(ratios[num:]) / rescale_ratio - 1) < 1e-6)
+    cur_ratio /= rescale_ratio
+    rescale_ratio *= (1 - cur_ratio)
+    # 1st Take the appropriate ratio of the elements left, but at least 1
+    elems_to_take = max(1, round(cur_ratio*(num_elems-cur_ind)))
     # 2nd make sure to take all elements in last iteration
     last_ind = (cur_ind + elems_to_take - 1 if num < len(ratios) - 1
                 else num_elems - 1) # inclusive range

@@ -38,7 +38,8 @@ Detailprobleme:
 
   Das obige Beispiel zeigt ein weiteres Problem auf. Momentan würde aus
   [ε, ε, w, ε, ε] nämlich [[ε, ε], w, [ε, ε]] konstruiert, was nicht optimal
-  ist. Dies muss noch verbessert werden.
+  ist. Diesem Problem wird dadurch begegnet, dass die α_i reskaliert werden und
+  sich immer auf die noch verbleibenden Elemente beziehen.
 
   Seien die Gewichte w = [ε, ε …, ε, w] und die Kosten c = [1, x, …, 1]. Dann
   wäre die optimale Aufteilung [[ε, …], …, w]. Allerdings würde dies nicht
