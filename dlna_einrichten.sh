@@ -31,7 +31,7 @@ do
   pre_number=$(($it + 2))
   cur_dir="${shuf_arr[$it]}"
   album_name="$(basename "$cur_dir")"
-  if echo $album_name | grep -xiE '(CD)?[ _]?[0-9]+'
+  if echo $album_name | grep -qxiE '(CD)?[ _]?[0-9]+'
   then
     pre_dir="$(dirname "$cur_dir")"
     real_album="$(basename "$pre_dir")"
