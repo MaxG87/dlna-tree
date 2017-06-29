@@ -25,9 +25,55 @@ def get_ratios(costs):
     return ratios
 
 
-def move_folders(cwd, folder_list, ratios, len_of_shortcut,
-                 max_branching_factor):
+def move_folders(cwd, move_instructions, len_of_shortcut):
+    """
+    Moves multiple elements into same subfolder
+
+    This function receives a list of lists, specifying which elements shall be
+    moved to the same subfolder. It then automatically determines a name for
+    the subfolder and moves all elements to it.
+
+    No subdirectory is created for lone elements.
+
+    Receives
+    --------
+    cwd: str
+        The current working directory. While not really the cwd, this function
+        behaves as it were.
+    move_instructions: list of containers.
+        Elements of each container are moved to a common subfolder.
+    len_of_shortcut: int
+        The name of the common subfolder is determined by the names of the
+        first and last element of the current container in move_instructions.
+        From these elements, the first len_of_shortcut characters are taken to
+        determine the name of the subfolder.
+
+    Returns
+    -------
+    ret_list: list of str
+        list of created subfolders
+    """
+
     ret_list = []
+    for cur_set in move_instructions:
+        assert(isinstance(cur_set, list))
+        if len(cur_set) == 1:
+            continue
+        branch_name = '{first_folder}_{last_folder}'.format(
+                       first_folder=cur_set[0][:len_of_shortcut],
+                       last_folder=cur_set[-1][:len_of_shortcut])
+        full_branch_name = os.path.join(cwd, branch_name)
+        os.mkdir(full_branch_name)
+        for elem in cur_set:
+            full_path = os.path.join(cwd, elem)
+            shutil.move(full_path, full_branch_name)
+        ret_list.append(full_branch_name)
+
+    return ret_list
+
+
+def ratio_based_structure(folder_list, ratios):
+    ret_move_instructions = []
     num_elems = len(folder_list)
     cur_ind = 0
     rescale_ratio = 1
@@ -46,24 +92,10 @@ def move_folders(cwd, folder_list, ratios, len_of_shortcut,
         # 3rd make sure not to take too much elements
         last_ind = min(last_ind, num_elems - 1)
 
-        if cur_ind == last_ind: # last_ind is inclusive!
-            # If the subfolder would hold only one element it is better to not
-            # create it.
-            cur_ind += 1
-            continue
-
-        branch_name = '{first_folder}_{last_folder}'.format(
-                       first_folder=folder_list[cur_ind][:len_of_shortcut],
-                       last_folder=folder_list[last_ind][:len_of_shortcut])
-        full_branch_name = os.path.join(cwd, branch_name)
-        os.mkdir(full_branch_name)
-        for folder in folder_list[cur_ind:(last_ind + 1)]:
-                full_path = os.path.join(cwd, folder)
-                shutil.move(full_path, full_branch_name)
+        ret_move_instructions.append(
+            [folder for folder in folder_list[cur_ind:(last_ind + 1)]])
         cur_ind += elems_to_take
-        ret_list.append(full_branch_name)
-
-    return ret_list
+    return ret_move_instructions
 
 
 def setup_node(cwd, wrap_around):
@@ -85,9 +117,10 @@ def setup_node(cwd, wrap_around):
     ratios = get_ratios(costs)
 
     # move folders to subfolders
-    subfolders = move_folders(cwd=cwd, folder_list=folder_list, ratios=ratios,
-                              len_of_shortcut=len_of_shortcut,
-                              max_branching_factor=max_branching_factor)
+    move_instructions = ratio_based_structure(folder_list=folder_list,
+                                              ratios=ratios)
+    subfolders = move_folders(cwd=cwd, move_instructions=move_instructions,
+                              len_of_shortcut=len_of_shortcut)
     for folder in subfolders:
         setup_node(cwd=folder, wrap_around=wrap_around)
 
