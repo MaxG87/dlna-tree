@@ -5,7 +5,7 @@ import os
 import shutil
 
 
-def get_access_cost(n, max_branching_factor, wrap_around):
+def get_access_cost(max_branching_factor, wrap_around):
     if wrap_around:
         costs = [1] + [min(n, max_branching_factor - n) + 1
                        for n in range(1, max_branching_factor)]
@@ -25,26 +25,10 @@ def get_ratios(costs):
     return ratios
 
 
-def setup_node(cwd):
-    # preparation of some constants
-    len_of_shortcut = 10
-    max_branching_factor = 4
-    tr_dict = str.maketrans('ÄÖÜ', 'AOU')
-    folder_list = sorted(os.listdir(cwd), key=lambda s: s.translate(tr_dict))
-
+def move_folders(cwd, folder_list, ratios, len_of_shortcut,
+                 max_branching_factor):
+    ret_list = []
     num_elems = len(folder_list)
-    if num_elems <= max_branching_factor:
-        # Nothing to do
-        return
-
-    # preparation of some important variables
-    # TODO: implement custom weight per folder
-    wrap_around = True # TODO move to function signature
-    costs = get_access_cost(n=n, max_branching_factor=max_branching_factor,
-                            wrap_around=wrap_around)
-    ratios = get_ratios(costs)
-
-    # move folders to subfolders
     cur_ind = 0
     rescale_ratio = 1
     for num, cur_ratio in enumerate(ratios):
@@ -55,14 +39,15 @@ def setup_node(cwd):
         elems_to_take = max(1, round(cur_ratio*(num_elems-cur_ind)))
         # 2nd make sure to take all elements in last iteration
         last_ind = (
+                    # inclusive range
                     cur_ind + elems_to_take - 1 if num < len(ratios) - 1
                     else num_elems - 1
-                   ) # inclusive range
+                   )
         # 3rd make sure not to take too much elements
         last_ind = min(last_ind, num_elems - 1)
 
         if cur_ind == last_ind: # last_ind is inclusive!
-            # If the subfolder would hold only one elment it is better to not
+            # If the subfolder would hold only one element it is better to not
             # create it.
             cur_ind += 1
             continue
@@ -76,12 +61,39 @@ def setup_node(cwd):
                 full_path = os.path.join(cwd, folder)
                 shutil.move(full_path, full_branch_name)
         cur_ind += elems_to_take
+        ret_list.append(full_branch_name)
 
-        # Call script recursively
-        setup_node(full_branch_name)
+    return ret_list
+
+
+def setup_node(cwd, wrap_around):
+    # preparation of some constants
+    len_of_shortcut = 10
+    max_branching_factor = 4
+    tr_dict = str.maketrans('ÄÖÜ', 'AOU')
+    folder_list = sorted(os.listdir(cwd), key=lambda s: s.translate(tr_dict))
+
+    num_elems = len(folder_list)
+    if num_elems <= max_branching_factor:
+        # Nothing to do
+        return
+
+    # preparation of some important variables
+    # TODO: implement custom weight per folder
+    costs = get_access_cost(max_branching_factor=max_branching_factor,
+                            wrap_around=wrap_around)
+    ratios = get_ratios(costs)
+
+    # move folders to subfolders
+    subfolders = move_folders(cwd=cwd, folder_list=folder_list, ratios=ratios,
+                              len_of_shortcut=len_of_shortcut,
+                              max_branching_factor=max_branching_factor)
+    for folder in subfolders:
+        setup_node(cwd=folder, wrap_around=wrap_around)
+
 
 def main():
-    setup_node(cwd=os.getcwd())
+    setup_node(cwd=os.getcwd(), wrap_around=True)
 
 if __name__ == "__main__":
     main()
