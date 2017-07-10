@@ -210,10 +210,11 @@ def bruteforce(cwd, folder_list, weight_dict, max_branching_factor,
                      split_positions=split_positions)
 
 
-def setup_node(cwd, folder_list, wrap_around):
+def setup_node(cwd, wrap_around):
     # preparation of some constants
     len_of_shortcut = 10
     max_branching_factor = 4
+    folder_list = get_folder_list(cwd)
 
     num_elems = len(folder_list)
     if num_elems <= max_branching_factor:
@@ -244,7 +245,7 @@ def main():
     # bruteforce(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
     #            max_branching_factor=max_branching_factor,
     #            wrap_around=wrap_around)
-    setup_node(cwd=cwd, folder_list=folder_list, wrap_around=wrap_around)
+    setup_node(cwd=cwd, wrap_around=wrap_around)
 
 if __name__ == "__main__":
     main()
