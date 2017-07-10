@@ -15,6 +15,12 @@ def get_access_cost(max_branching_factor, wrap_around):
     return costs
 
 
+def get_folder_list(cwd):
+    tr_dict = str.maketrans('ÄÖÜ', 'AOU')
+    folder_list = sorted(os.listdir(cwd), key=lambda s: s.translate(tr_dict))
+    return folder_list
+
+
 def get_ratios(costs):
     # Requirements:
     #   sum(ratios) == 1
@@ -98,12 +104,105 @@ def ratio_based_structure(folder_list, ratios):
     return ret_move_instructions
 
 
-def setup_node(cwd, wrap_around):
+def bruteforce_worker(folder_list, weight_dict, cache, split_positions,
+                      max_branching_factor, wrap_around):
+    if max_branching_factor > 2:
+        raise Exception("Currently the maximum branching factor allowed is 2.")
+
+    ret_move_instructions = []
+    num_elems = len(folder_list)
+    weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
+    sum_of_weights = sum(weight_tuple)
+
+    # Abort recursion
+    if weight_tuple in cache:
+        return sum_of_weights, cache[weight_tuple]
+    if num_elems <= max_branching_factor:
+        costs = get_access_cost(max_branching_factor=num_elems,
+                                wrap_around=wrap_around)
+        # Subfolders which would hold only a single element will not be
+        # created, as the element can be used directly. Therefore they do not
+        # have inner costs. Their access costs are considered on recursion
+        # level earlier.
+        total_costs = (0 if num_elems == 1
+                        else sum(c*w for c, w in zip(costs, weight_tuple)))
+        cache[weight_tuple] = total_costs
+        split_positions[weight_tuple] = ()
+        return sum_of_weights, total_costs
+
+    best_split_pos = -1
+    best_split_cost = 0xCAFFEBABE
+    costs = get_access_cost(max_branching_factor=max_branching_factor,
+                            wrap_around=wrap_around)
+    for split_pos in range(1, num_elems):
+        left_list   = folder_list[:split_pos]
+        right_list  = folder_list[split_pos:]
+        left_weight, left_costs  = bruteforce_worker(folder_list=left_list,
+            weight_dict=weight_dict,
+            cache=cache,
+            split_positions=split_positions,
+            max_branching_factor=max_branching_factor,
+            wrap_around=wrap_around)
+        right_weight, right_costs = bruteforce_worker(folder_list=right_list,
+            weight_dict=weight_dict,
+            cache=cache,
+            split_positions=split_positions,
+            max_branching_factor=max_branching_factor,
+            wrap_around=wrap_around)
+        weight_list = (left_weight, right_weight)
+        cost_list = (left_costs, right_costs)
+
+        total_costs = (sum(c*w for c, w in zip(costs, weight_list))
+                       + sum(cost_list))
+        if total_costs < best_split_cost:
+            best_split_pos = split_pos
+            best_split_cost = total_costs
+
+    cache[weight_tuple] = best_split_cost
+    split_positions[weight_tuple] = (best_split_pos,)
+    return sum_of_weights, best_split_cost
+
+
+def move_recursively(cwd, folder_list, weight_dict, split_positions):
+    weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
+
+    if len(split_positions[weight_tuple]) == 0:
+        return
+
+    split_tuple = (0,) + split_positions[weight_tuple] + (len(folder_list),)
+    move_instructions = []
+    for start, end in zip(split_tuple[:-1], split_tuple[1:]):
+        to_append = folder_list[start:end]
+        move_instructions.append(to_append)
+
+    subfolders = move_folders(cwd=cwd, move_instructions=move_instructions,
+                              len_of_shortcut=10)
+    for subf, flist in zip(subfolders, move_instructions):
+        new_cwd = os.path.join(cwd, subf)
+        move_recursively(cwd=new_cwd, folder_list=flist,
+                         weight_dict=weight_dict,
+                         split_positions=split_positions)
+
+
+def bruteforce(cwd, folder_list, weight_dict, max_branching_factor,
+               wrap_around):
+    cache = {}
+    split_positions={}
+    _, total_costs = bruteforce_worker(folder_list=folder_list,
+        weight_dict=weight_dict,
+        cache=cache,
+        split_positions=split_positions,
+        max_branching_factor=max_branching_factor,
+        wrap_around=wrap_around)
+    print(total_costs)
+    move_recursively(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
+                     split_positions=split_positions)
+
+
+def setup_node(cwd, folder_list, wrap_around):
     # preparation of some constants
     len_of_shortcut = 10
     max_branching_factor = 4
-    tr_dict = str.maketrans('ÄÖÜ', 'AOU')
-    folder_list = sorted(os.listdir(cwd), key=lambda s: s.translate(tr_dict))
 
     num_elems = len(folder_list)
     if num_elems <= max_branching_factor:
@@ -126,7 +225,16 @@ def setup_node(cwd, wrap_around):
 
 
 def main():
-    setup_node(cwd=os.getcwd(), wrap_around=True)
+    cwd = os.getcwd()
+    folder_list = get_folder_list(cwd=cwd)
+    weight_dict = {f: 1 for f in folder_list}
+    max_branching_factor = 2
+    wrap_around = True
+    mean_costs = bruteforce(cwd=cwd, folder_list=folder_list,
+                            weight_dict=weight_dict,
+                            max_branching_factor=max_branching_factor,
+                            wrap_around=wrap_around)
+    #setup_node(cwd=os.getcwd(), wrap_around=True)
 
 if __name__ == "__main__":
     main()
