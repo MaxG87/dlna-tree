@@ -241,10 +241,10 @@ def main():
     weight_dict = {f: 1 for f in folder_list}
     max_branching_factor = 4
     wrap_around = True
-    bruteforce(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
-               max_branching_factor=max_branching_factor,
-               wrap_around=wrap_around)
-    #setup_node(cwd=os.getcwd(), folder_list=folder_list, wrap_around=True)
+    # bruteforce(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
+    #            max_branching_factor=max_branching_factor,
+    #            wrap_around=wrap_around)
+    setup_node(cwd=cwd, folder_list=folder_list, wrap_around=wrap_around)
 
 if __name__ == "__main__":
     main()
