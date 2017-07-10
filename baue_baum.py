@@ -194,7 +194,7 @@ def bruteforce(cwd, folder_list, weight_dict, max_branching_factor,
         split_positions=split_positions,
         max_branching_factor=max_branching_factor,
         wrap_around=wrap_around)
-    print(total_costs)
+    # print(total_costs)
     move_recursively(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
                      split_positions=split_positions)
 
