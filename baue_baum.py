@@ -31,6 +31,25 @@ def get_ratios(costs):
     return ratios
 
 
+def split_to_lists(inlist, insplit):
+    split = (0,) + insplit + (len(inlist),)
+    ret_tuple = (inlist[start:end]
+                 for start, end in zip(split[:-1], split[1:]))
+    return ret_tuple
+
+
+def iter_nsplits(num_elems, num_splits, start=1, ret_tuple=()):
+    if num_splits == 0:
+        yield ret_tuple
+        return
+    for split_pos in range(start, num_elems-num_splits+1):
+        new_tuple = ret_tuple + (split_pos,)
+        yield from iter_nsplits(num_elems=num_elems,
+                                 num_splits=num_splits-1,
+                                 start=split_pos+1,
+                                 ret_tuple=new_tuple)
+
+
 def move_folders(cwd, move_instructions, len_of_shortcut):
     """
     Moves multiple elements into same subfolder
@@ -106,9 +125,6 @@ def ratio_based_structure(folder_list, ratios):
 
 def bruteforce_worker(folder_list, weight_dict, cache, split_positions,
                       max_branching_factor, wrap_around):
-    if max_branching_factor > 2:
-        raise Exception("Currently the maximum branching factor allowed is 2.")
-
     ret_move_instructions = []
     num_elems = len(folder_list)
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
@@ -130,36 +146,31 @@ def bruteforce_worker(folder_list, weight_dict, cache, split_positions,
         split_positions[weight_tuple] = ()
         return sum_of_weights, total_costs
 
-    best_split_pos = -1
+    best_split = ()
     best_split_cost = 0xCAFFEBABE
     costs = get_access_cost(max_branching_factor=max_branching_factor,
                             wrap_around=wrap_around)
-    for split_pos in range(1, num_elems):
-        left_list   = folder_list[:split_pos]
-        right_list  = folder_list[split_pos:]
-        left_weight, left_costs  = bruteforce_worker(folder_list=left_list,
-            weight_dict=weight_dict,
-            cache=cache,
-            split_positions=split_positions,
-            max_branching_factor=max_branching_factor,
-            wrap_around=wrap_around)
-        right_weight, right_costs = bruteforce_worker(folder_list=right_list,
-            weight_dict=weight_dict,
-            cache=cache,
-            split_positions=split_positions,
-            max_branching_factor=max_branching_factor,
-            wrap_around=wrap_around)
-        weight_list = (left_weight, right_weight)
-        cost_list = (left_costs, right_costs)
+    for cur_split in iter_nsplits(num_elems=num_elems,
+                                   num_splits=max_branching_factor-1):
+        cost_list = []
+        weight_list = []
+        for sublist in split_to_lists(inlist=folder_list, insplit=cur_split):
+            cur_weight, cur_cost = bruteforce_worker(folder_list=sublist,
+                weight_dict=weight_dict, cache=cache,
+                split_positions=split_positions,
+                max_branching_factor=max_branching_factor,
+                wrap_around=wrap_around)
+            cost_list.append(cur_cost)
+            weight_list.append(cur_weight)
 
         total_costs = (sum(c*w for c, w in zip(costs, weight_list))
                        + sum(cost_list))
         if total_costs < best_split_cost:
-            best_split_pos = split_pos
+            best_split = cur_split
             best_split_cost = total_costs
 
     cache[weight_tuple] = best_split_cost
-    split_positions[weight_tuple] = (best_split_pos,)
+    split_positions[weight_tuple] = best_split
     return sum_of_weights, best_split_cost
 
 
@@ -228,13 +239,12 @@ def main():
     cwd = os.getcwd()
     folder_list = get_folder_list(cwd=cwd)
     weight_dict = {f: 1 for f in folder_list}
-    max_branching_factor = 2
+    max_branching_factor = 4
     wrap_around = True
-    mean_costs = bruteforce(cwd=cwd, folder_list=folder_list,
-                            weight_dict=weight_dict,
-                            max_branching_factor=max_branching_factor,
-                            wrap_around=wrap_around)
-    #setup_node(cwd=os.getcwd(), wrap_around=True)
+    bruteforce(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
+               max_branching_factor=max_branching_factor,
+               wrap_around=wrap_around)
+    #setup_node(cwd=os.getcwd(), folder_list=folder_list, wrap_around=True)
 
 if __name__ == "__main__":
     main()
