@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding: utf-8
 
+import json
 import os
 import shutil
 
@@ -215,7 +216,6 @@ def bruteforce(cwd, folder_list, weight_dict, max_branching_factor,
         split_positions=split_positions,
         max_branching_factor=max_branching_factor,
         access_type=access_type)
-    # print(total_costs)
     move_recursively(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
                      split_positions=split_positions)
 
@@ -249,7 +249,19 @@ def setup_node(cwd, max_branching_factor, access_type):
 def main():
     cwd = os.getcwd()
     folder_list = get_folder_list(cwd=cwd)
+
+    # Import custom weights and apply them to the weight_dict.
+    # TODO Sanity checks
+    #   1) no keys occour twice
+    #   2) only doubles as values
+    #   3) all keys are valid folders, otherwise warn or something
+    script_dir = os.path.dirname(__file__)
+    custom_weights_file = os.path.join(script_dir, 'custom_weights.json')
+    with open(custom_weights_file) as f:
+        custom_weights = json.load(f)
     weight_dict = {f: 1 for f in folder_list}
+    weight_dict.update(custom_weights)
+
     max_branching_factor = 2
     access_type = 'constant'
     # bruteforce(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
