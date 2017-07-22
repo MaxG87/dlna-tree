@@ -220,7 +220,7 @@ def bruteforce(cwd, folder_list, weight_dict, max_branching_factor,
                      split_positions=split_positions)
 
 
-def setup_node(cwd, max_branching_factor, access_type):
+def setup_node(cwd, weight_dict, max_branching_factor, access_type):
     # preparation of some constants
     len_of_shortcut = 10
     folder_list = get_folder_list(cwd)
@@ -242,7 +242,8 @@ def setup_node(cwd, max_branching_factor, access_type):
     subfolders = move_folders(cwd=cwd, move_instructions=move_instructions,
                               len_of_shortcut=len_of_shortcut)
     for folder in subfolders:
-        setup_node(cwd=folder, max_branching_factor=max_branching_factor,
+        setup_node(cwd=folder, weight_dict=weight_dict,
+                   max_branching_factor=max_branching_factor,
                    access_type=access_type)
 
 
@@ -267,7 +268,8 @@ def main():
     # bruteforce(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
     #            max_branching_factor=max_branching_factor,
     #            access_type=access_type)
-    setup_node(cwd=cwd, max_branching_factor=max_branching_factor,
+    setup_node(cwd=cwd, weight_dict=weight_dict,
+               max_branching_factor=max_branching_factor,
                access_type=access_type)
 
 if __name__ == "__main__":
