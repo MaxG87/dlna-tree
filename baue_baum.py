@@ -262,8 +262,8 @@ def main():
     weight_dict = {f: 1 for f in folder_list}
     weight_dict.update(custom_weights)
 
-    max_branching_factor = 2
-    access_type = 'constant'
+    max_branching_factor = 4
+    access_type = 'wrappable'
     # bruteforce(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
     #            max_branching_factor=max_branching_factor,
     #            access_type=access_type)
