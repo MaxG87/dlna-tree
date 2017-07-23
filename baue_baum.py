@@ -11,6 +11,29 @@ class IllegalArgumentException(Exception):
 
 
 def get_access_cost(max_branching_factor, access_type):
+    """
+    Returns list of access costs
+
+    This function calculates how costly it is to enter/access the elements of a
+    directory. It does not consider traversing a tree, only selecting elements
+    on the same tree level.
+
+    Parameter
+    ---------
+    max_branching_factor: double
+        How many subelements are there.
+    access_type: str
+        Specifies the costs for each element:
+            linear: linear, i.e. one "cost" to traverse one element
+            wrappable: linear, but with connection between first and last elem
+            constant: 1 for each element
+
+    Returns
+    -------
+    costs: list of doubles
+        list of doubles, each stating the cost to choose the corresponding
+        element
+    """
     if access_type == 'wrappable':
         costs = [1] + [min(n, max_branching_factor - n) + 1
                        for n in range(1, max_branching_factor)]
@@ -27,15 +50,31 @@ def get_access_cost(max_branching_factor, access_type):
 
 
 def get_folder_list(cwd):
+    """
+    Glob folder and sort them alphabetically
+    """
     tr_dict = str.maketrans('ÄÖÜ', 'AOU')
     folder_list = sorted(os.listdir(cwd), key=lambda s: s.translate(tr_dict))
     return folder_list
 
 
 def get_ratios(costs):
-    # Requirements:
-    #   sum(ratios) == 1
-    #   ∀i,j: ratios[i]/ratios[j] = costs[j] / costs[i]
+    """
+    Transform costs to ratios
+
+    Given access costs, this function calculates the fraction of the total
+    weight that should go into subfolders. This is used for the ratio based
+    tree construction and _does not_ take into account nonlinear access costs
+    (i.e. costs(2*n) != 2*costs(n) for large n).
+
+    The requirements satisfied by this function are:
+        sum(ratios) == 1
+        ∀i,j: ratios[i]/ratios[j] = costs[j] / costs[i]
+
+    Thus, this is the most condensed form of the design rationale of the ratio
+    based tree construction approach.
+    """
+
     ratios_unnormed = [1/c for c in costs]
     ratios = [r/sum(ratios_unnormed) for r in ratios_unnormed]
     assert(abs(sum(ratios) - 1) < 1e-6)
@@ -142,8 +181,8 @@ def bruteforce_worker(folder_list, weight_dict, cache, split_positions,
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
     sum_of_weights = sum(weight_tuple)
 
-    # Abort recursion
     if weight_tuple in cache:
+        # abort recursion
         return sum_of_weights, cache[weight_tuple]
     if num_elems <= max_branching_factor:
         costs = get_access_cost(max_branching_factor=num_elems,
@@ -196,15 +235,21 @@ def bruteforce(cwd, folder_list, weight_dict, max_branching_factor,
         split_positions=split_positions,
         max_branching_factor=max_branching_factor,
         access_type=access_type)
-    move_recursively(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
-                     split_positions=split_positions)
+    return split_positions
 
 
 def get_ratio_splitpositions(weight_tuple, ratios):
     """
     Get appropriate split positions
 
-    TODO TEXT
+    Given a tuple of weights and an information about how much of the total
+    weight shall be in a given container, this function determines which
+    elements go into which container.
+
+    If a given element of weight_tuple does not fit entirely into the container
+    at hand it is taken iff its overlap is smaller than the part still fitting
+    in the container. Furthermore, the weights and the remaining ratios are
+    rescaled to keep errors due to rounding issues as small as possible.
 
     Parameters
     ----------
@@ -266,6 +311,8 @@ def get_ratio_splitpositions(weight_tuple, ratios):
             # mass of the first elements is not enough to be split into
             # multiple branches.
             # Since there are only heuristic fixes, no fix is attempted so far.
+            # Instead of fixing this issue, improvements of the bruteforce
+            # solution seem to be more desirable.
             break
         split_positions += (cur_split_pos,)
 
@@ -331,9 +378,9 @@ def main():
 
     max_branching_factor = 4
     access_type = 'wrappable'
-    # bruteforce(cwd=cwd, folder_list=folder_list, weight_dict=weight_dict,
-    #            max_branching_factor=max_branching_factor,
-    #            access_type=access_type)
+    # split_positions = bruteforce(cwd=cwd, folder_list=folder_list,
+    #     weight_dict=weight_dict, max_branching_factor=max_branching_factor,
+    #     access_type=access_type)
     split_positions = ratio_based_tree(cwd=cwd, folder_list=folder_list,
         weight_dict=weight_dict, max_branching_factor=max_branching_factor,
         access_type=access_type)
