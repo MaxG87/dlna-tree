@@ -108,6 +108,33 @@ def move_folders(cwd, move_instructions, len_of_shortcut):
     return ret_list
 
 
+def move_recursively(cwd, folder_list, weight_dict, split_positions):
+    weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
+
+    if len(split_positions[weight_tuple]) == 0:
+        return
+
+    assert(split_positions[weight_tuple][-1] < len(folder_list))
+    split_tuple = (0,) + split_positions[weight_tuple] + (len(folder_list),)
+    move_instructions = []
+    for start, end in zip(split_tuple[:-1], split_tuple[1:]):
+        assert(start < end)
+        if start + 1 < end:
+            # For single elements no subfolder are created. Thus
+            # move_instructions are created only for subfolders that will
+            # contain multiple elements.
+            to_append = folder_list[start:end]
+            move_instructions.append(to_append)
+
+    subfolders = move_folders(cwd=cwd, move_instructions=move_instructions,
+                              len_of_shortcut=10)
+    for subf, flist in zip(subfolders, move_instructions):
+        new_cwd = os.path.join(cwd, subf)
+        move_recursively(cwd=new_cwd, folder_list=flist,
+                         weight_dict=weight_dict,
+                         split_positions=split_positions)
+
+
 def bruteforce_worker(folder_list, weight_dict, cache, split_positions,
                       max_branching_factor, access_type):
     ret_move_instructions = []
@@ -157,31 +184,6 @@ def bruteforce_worker(folder_list, weight_dict, cache, split_positions,
     cache[weight_tuple] = best_split_cost
     split_positions[weight_tuple] = best_split
     return sum_of_weights, best_split_cost
-
-
-def move_recursively(cwd, folder_list, weight_dict, split_positions):
-    weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
-
-    if len(split_positions[weight_tuple]) == 0:
-        return
-
-    assert(split_positions[weight_tuple][-1] < len(folder_list))
-    split_tuple = (0,) + split_positions[weight_tuple] + (len(folder_list),)
-    move_instructions = []
-    for start, end in zip(split_tuple[:-1], split_tuple[1:]):
-        assert(start < end)
-        if start + 1 < end:
-            # For single elements no subfolder are created. Thus move_instructions are created only for subfolders that will contain multiple elements.
-            to_append = folder_list[start:end]
-            move_instructions.append(to_append)
-
-    subfolders = move_folders(cwd=cwd, move_instructions=move_instructions,
-                              len_of_shortcut=10)
-    for subf, flist in zip(subfolders, move_instructions):
-        new_cwd = os.path.join(cwd, subf)
-        move_recursively(cwd=new_cwd, folder_list=flist,
-                         weight_dict=weight_dict,
-                         split_positions=split_positions)
 
 
 def bruteforce(cwd, folder_list, weight_dict, max_branching_factor,
