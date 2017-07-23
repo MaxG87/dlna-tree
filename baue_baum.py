@@ -169,8 +169,11 @@ def move_recursively(cwd, folder_list, weight_dict, split_positions):
     split_tuple = (0,) + split_positions[weight_tuple] + (len(folder_list),)
     move_instructions = []
     for start, end in zip(split_tuple[:-1], split_tuple[1:]):
-        to_append = folder_list[start:end]
-        move_instructions.append(to_append)
+        assert(start < end)
+        if start + 1 < end:
+            # For single elements no subfolder are created. Thus move_instructions are created only for subfolders that will contain multiple elements.
+            to_append = folder_list[start:end]
+            move_instructions.append(to_append)
 
     subfolders = move_folders(cwd=cwd, move_instructions=move_instructions,
                               len_of_shortcut=10)
