@@ -165,6 +165,7 @@ def move_recursively(cwd, folder_list, weight_dict, split_positions):
     if len(split_positions[weight_tuple]) == 0:
         return
 
+    assert(split_positions[weight_tuple][-1] < len(folder_list))
     split_tuple = (0,) + split_positions[weight_tuple] + (len(folder_list),)
     move_instructions = []
     for start, end in zip(split_tuple[:-1], split_tuple[1:]):
@@ -219,25 +220,49 @@ def get_ratio_splitpositions(weight_tuple, ratios):
 
     split_positions = ()
 
-    print(weight_tuple)
-
-    ret_move_instructions = []
     num_elems = len(weight_tuple)
-    cur_ind = 0
+    base_ind = 0
     rescale_ratio = 1
     # The last ratio is not included, as only the positions to split are
     # calculated. Thus, the remaining elements automatically form the last
     # partition.
     for cur_ratio in ratios[:-1]:
+        cur_split = 0 if len(split_positions) == 0 else split_positions[-1]
+        # Slow but without NumPy. Also, quite elegant.
+        cumsum_weights = [sum(weight_tuple[cur_split:i+1])
+                          for i in range(cur_split, len(weight_tuple))]
+        cumratio_weights = [w / cumsum_weights[-1] for w in cumsum_weights]
+
+        # Ratios are rescaled to manage rounding issues. If e.g. one should
+        # take 1/3rd but due to a element with a big weight one can only take
+        # 1/4th, the remaining 1/12th are correctly included in the remaining
+        # list. Without this rescaling the last subfolder would get very huge.
         cur_ratio /= rescale_ratio
         rescale_ratio *= (1 - cur_ratio)
-        # Take the appropriate ratio of the elements left, but at least 1
-        elems_to_take = max(1, round(cur_ratio*(num_elems-cur_ind)))
-        last_ind = cur_ind + elems_to_take - 1
-        assert(last_ind < num_elems - 1)
 
-        split_positions += (last_ind+1,)
-        cur_ind += elems_to_take
+        is_greater = list(map(lambda w: w >= cur_ratio, cumratio_weights))
+        ind_candidate = is_greater.index(True)
+        if ind_candidate == 0:
+            cur_split_pos = ind_candidate + 1
+        elif (cur_ratio - cumratio_weights[ind_candidate-1] <
+              cumratio_weights[ind_candidate] - cur_ratio):
+             cur_split_pos = ind_candidate
+        else:
+            cur_split_pos = ind_candidate + 1
+        new_base_ind = base_ind + cur_split_pos
+        cur_split_pos += base_ind
+        base_ind = new_base_ind
+
+        assert(cur_split_pos <= len(weight_tuple))
+        if cur_split_pos == len(weight_tuple):
+            # Due to deficiencies in the Ansatz it can happen that the maximum
+            # branching is not exhausted. This occurs when there is a element
+            # with a huge weight at the end of the list. Then the accumulated
+            # mass of the first elements is not enough to be split into
+            # multiple branches.
+            # Since there are only heuristic fixes, no fix is attempted so far.
+            break
+        split_positions += (cur_split_pos,)
 
     return split_positions
 
