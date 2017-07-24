@@ -134,7 +134,7 @@ def move_folders(cwd, move_instructions, len_of_shortcut):
         assert(isinstance(cur_set, list))
         if len(cur_set) == 1:
             continue
-        branch_name = '{first_folder}_{last_folder}'.format(
+        branch_name = '{first_folder}-{last_folder}'.format(
                        first_folder=cur_set[0][:len_of_shortcut],
                        last_folder=cur_set[-1][:len_of_shortcut])
         full_branch_name = os.path.join(cwd, branch_name)
