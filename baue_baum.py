@@ -116,7 +116,9 @@ def move_folders(cwd, move_instructions, len_of_shortcut):
         The current working directory. While not really the cwd, this function
         behaves as it were.
     move_instructions: list of containers.
-        Elements of each container are moved to a common subfolder.
+        Elements of each container are moved to a common subfolder. The
+        elements must be in cwd! It must hold len(c) > 1 for each c in
+        move_instructions.
     len_of_shortcut: int
         The name of the common subfolder is determined by the names of the
         first and last element of the current container in move_instructions.
