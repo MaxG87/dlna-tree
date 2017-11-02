@@ -332,7 +332,7 @@ def ratio_based_tree(cwd, folder_list, weight_dict, access_type,
                                 access_type=access_type)
         # Subfolders which would hold only a single element will not be
         # created, as the element can be used directly. Therefore they do not
-        # have inner costs. Their access costs are considered on recursion
+        # have inner costs. Their access costs are considered one recursion
         # level earlier.
         total_costs = (0 if num_elems == 1
                         else sum(c*w for c, w in zip(costs, weight_tuple)))
