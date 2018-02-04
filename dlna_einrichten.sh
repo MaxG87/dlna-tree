@@ -31,7 +31,7 @@ num_rand_dir=$(($num_screen_items * $num_rand_screens - 2)) # Baum und Liste abz
 shuf_arr=($(find "$liste_dir" -iregex '.*\(ogg\|mp3\|flac\|wma\)' -print0 | xargs -0 dirname | sort -u | shuf -n$num_rand_dir))
 for it in $(seq 0 $(($num_rand_dir - 1)))
 do
-  pre_number=$(($it + 2))
+  pre_number=$(printf "%02d" $(($it + 2)))
   cur_dir="${shuf_arr[$it]}"
   album_name="$(basename "$cur_dir")"
   if echo $album_name | grep -qxiE '(CD)?[ _]?[0-9]+'
