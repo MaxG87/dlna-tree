@@ -25,7 +25,9 @@ done
 (cd "$baum_dir" ; /opt/DLNA/baue_baum.py)
 
 #Zufällige Ordner verlinken
-num_rand_dir=6
+num_rand_screens=2
+num_screen_items=4
+num_rand_dir=$(($num_screen_items * $num_rand_screens - 2)) # Baum und Liste abziehen
 shuf_arr=($(find "$liste_dir" -iregex '.*\(ogg\|mp3\|flac\|wma\)' -print0 | xargs -0 dirname | sort -u | shuf -n$num_rand_dir))
 for it in $(seq 0 $(($num_rand_dir - 1)))
 do
