@@ -2,7 +2,8 @@
 
 #Konstanten definieren
 dlna_dir=/media/Daten/DLNA
-liste_dir=$dlna_dir/1_Liste
+baum_dir=$dlna_dir/00_Baum
+liste_dir=$dlna_dir/01_Liste
 musik_dir=/media/Daten/Musik
 IFS=$(echo -en "\n\b")
 
@@ -13,15 +14,15 @@ mkdir $dlna_dir
 
 #DLNA-Inhalte verlinken
 cp -rl "$musik_dir" "$liste_dir"
-mkdir $dlna_dir/0_Baum
+mkdir "$baum_dir"
 for it in "$liste_dir"/*
 do
   cur_dir="$(basename "$it")"
-  ln -s "$it" "$dlna_dir/0_Baum/$cur_dir"
+  ln -s "$it" "$baum_dir/$cur_dir"
 done
 
 #Pseudo-BBaum bauen
-(cd $dlna_dir/0_Baum ; /opt/DLNA/baue_baum.py)
+(cd "$baum_dir" ; /opt/DLNA/baue_baum.py)
 
 #Zufällige Ordner verlinken
 num_rand_dir=6
