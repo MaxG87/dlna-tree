@@ -8,7 +8,7 @@ musik_dir=/media/Daten/Musik
 IFS=$(echo -en "\n\b")
 
 #DLNA-Server anhalten und etwas aufräumen
-/etc/init.d/minidlna stop
+systemctl stop minidlna.service
 rm -rf $dlna_dir
 mkdir $dlna_dir
 
@@ -50,6 +50,6 @@ chown minidlna:minidlna -R "$dlna_dir"
 find "$dlna_dir" -type f -exec chmod 444 {} +
 find "$dlna_dir" -type d -exec chmod 555 {} +
 
-sudo minidlnad -R
+minidlnad -u minidlna -R
 sleep 3
-sudo /etc/init.d/minidlna start
+systemctl start minidlna.service
