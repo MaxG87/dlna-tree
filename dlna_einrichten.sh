@@ -43,6 +43,13 @@ do
   ln -s "$cur_dir" "$dlna_dir/${pre_number}_$album_name"
 done
 
+# Berechtigungen für MiniDLNA wieder herstellen
+# Eigentümer ist minidlna, aber alle dürfen Lesen und Ordner öffnen. Niemand
+# darf mehr.
+chown minidlna:minidlna -R "$dlna_dir"
+find "$dlna_dir" -type f -exec chmod 444 {} +
+find "$dlna_dir" -type d -exec chmod 555 {} +
+
 sudo minidlnad -R
 sleep 3
 sudo /etc/init.d/minidlna start
