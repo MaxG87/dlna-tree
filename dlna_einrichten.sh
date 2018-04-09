@@ -46,9 +46,9 @@ done
 # Berechtigungen für MiniDLNA wieder herstellen
 # Eigentümer ist minidlna, aber alle dürfen Lesen und Ordner öffnen. Niemand
 # darf mehr.
-chown minidlna:minidlna -R "$dlna_dir"
-find "$dlna_dir" -type f -exec chmod 444 {} +
-find "$dlna_dir" -type d -exec chmod 555 {} +
+chown minidlna:dlnausers -R "$dlna_dir"
+find "$dlna_dir" -type f -exec chmod 660 {} +
+find "$dlna_dir" -type d -exec chmod 770 {} +
 
 minidlnad -u minidlna -R
 sleep 3
