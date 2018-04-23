@@ -53,8 +53,8 @@ def get_folder_list(cwd):
     """
     Glob folder and sort them alphabetically
     """
-    tr_dict = str.maketrans('ÄÖÜ', 'AOU')
-    folder_list = sorted(os.listdir(cwd), key=lambda s: s.translate(tr_dict))
+    tr_dict = str.maketrans('ÄÖÜäöü', 'AOUäöü')
+    folder_list = sorted(os.listdir(cwd), key=lambda s: s.translate(tr_dict).lower())
     return folder_list
 
 
