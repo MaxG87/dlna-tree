@@ -34,7 +34,6 @@ sudo adduser minidlna $newgroup
 
 # Add configuration lines to corresponding files
 echo "00 4  * * * minidlna /opt/DLNA/dlna_einrichten.sh" | sudo tee -a /etc/crontab
-echo "extraargs=acpi=off" | sudo tee -a /boot/armbianEnv.txt
 echo 'UUID="e69f73d8-44f3-4cf9-b965-c6a35fde05e5"' "$mountdir" 'ext4 defaults,nofail 0 2' | sudo tee -a /etc/fstab
 
 sudo mount "$mountdir"
