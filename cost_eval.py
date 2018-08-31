@@ -42,8 +42,9 @@ def init(access_type):
     # free.
     for cur_n in range (2, maxN):
         for cur_b in range(cur_n, maxB):
-            total_cost = sum([get_access_cost(cur_bin=cur_bin, num_bins=cur_n,
-                access_type=access_type) for cur_bin in range(0, cur_n)])
+            total_cost = sum(get_access_cost(cur_bin=cur_bin, num_bins=cur_n,
+                                             access_type=access_type)
+                             for cur_bin in range(0, cur_n))
             tree_cost[cur_n, cur_b] = total_cost
             n[0:cur_n, cur_n, cur_b] = 1
 
