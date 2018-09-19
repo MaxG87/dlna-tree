@@ -51,5 +51,3 @@ find "$dlna_dir" -type f -exec chmod 660 {} +
 find "$dlna_dir" -type d -exec chmod 770 {} +
 
 minidlnad -u minidlna -R -f /opt/DLNA/minidlna.conf
-sleep 3
-systemctl start minidlna.service
