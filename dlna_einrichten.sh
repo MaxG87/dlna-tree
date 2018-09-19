@@ -2,6 +2,7 @@
 
 #Konstanten definieren
 dlna_dir=/media/Daten/DLNA
+dlna_cache=/media/Daten/dlna_cache
 baum_dir=$dlna_dir/00_Baum
 liste_dir=$dlna_dir/01_Liste
 musik_dir=/media/Daten/Musik
@@ -47,7 +48,11 @@ done
 # Eigentümer ist minidlna, aber alle dürfen Lesen und Ordner öffnen. Niemand
 # darf mehr.
 chown minidlna:dlnausers -R "$dlna_dir"
-find "$dlna_dir" -type f -exec chmod 660 {} +
-find "$dlna_dir" -type d -exec chmod 770 {} +
+chown minidlna:minidlna -R "$dlna_cache"
+for folder in "$dlna_dir" "$dlna_cache"
+do
+  find "$folder" -type f -exec chmod 660 {} +
+  find "$folder" -type d -exec chmod 770 {} +
+done
 
 minidlnad -u minidlna -R -f /opt/DLNA/minidlna.conf
