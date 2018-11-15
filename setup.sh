@@ -14,7 +14,8 @@ fi
 sudo aptitude install minidlna
 
 scriptdir=/opt/DLNA
-mountdir=/media/Daten
+mountdir=/media/Daten # Do not change lighthearted. Unfortunately, this path is
+                      # hardcoded in other scripts too!
 UUID=e69f73d8-44f3-4cf9-b965-c6a35fde05e5
 sudo mkdir -p "$scriptdir" "$mountdir"
 
