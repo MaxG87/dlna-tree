@@ -17,6 +17,20 @@ scriptdir=/opt/DLNA
 mountdir=/media/Daten # Do not change lighthearted. Unfortunately, this path is
                       # hardcoded in other scripts too!
 UUID=e69f73d8-44f3-4cf9-b965-c6a35fde05e5
+
+# SETTING UP THE HDD
+# It does not seem to be appropriate to script the setup of the HDD. However,
+# it shall be documented briefly:
+#
+# 1. Ensure that there is a partition with a sane file system. Ext4 or BTRFS
+#    will do.
+# 2. Add the music, e.g. via `rsync -a --progress /path/to/music /path/to/mount/of/device/`.
+#    It is important to ommit the '/' at the end of the first path. Note
+#    further that currently the folder containing the music must be of name
+#    'Musik'.
+# 3. Adapt user and group of files, e.g. via `chown $USER:dlnausers -R /path/to/mount/of/device/music`.
+# 4. Adapt the entry to /etc/fstab by adding the appropriate UUID.
+
 sudo mkdir -p "$scriptdir" "$mountdir"
 
 # TODO Move files to $scriptdir.
