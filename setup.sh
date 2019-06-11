@@ -23,7 +23,7 @@ function setup_server() {
 
   # Add configuration lines to corresponding files
   echo "00 4  * * * minidlna /opt/DLNA/dlna_einrichten.sh" | sudo tee -a /etc/crontab
-  echo "UUID=\"$UUID\"" "$mountdir" 'ext4 defaults,nofail 0 2' | sudo tee -a /etc/fstab
+  echo "UUID=\"$UUID\"" "$mountdir" 'btrfs defaults,nofail 0 2' | sudo tee -a /etc/fstab
 
   sudo mount "$mountdir"
 
@@ -39,7 +39,7 @@ fi
 scriptdir=/opt/DLNA
 mountdir=/media/Daten # Do not change lighthearted. Unfortunately, this path is
                       # hardcoded in other scripts too!
-UUID=e69f73d8-44f3-4cf9-b965-c6a35fde05e5
+UUID=26c17045-5c31-4fe4-abb0-d30eac4cfe6f
 
 # SETTING UP THE HDD
 # It does not seem to be appropriate to script the setup of the HDD. However,
