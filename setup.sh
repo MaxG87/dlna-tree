@@ -24,11 +24,23 @@ function setup_server() {
   # Add configuration lines to corresponding files
   echo "00 4  * * * minidlna /opt/DLNA/dlna_einrichten.sh" | sudo tee -a /etc/crontab
   echo "UUID=\"$UUID\"" "$mountdir" 'btrfs defaults,nofail 0 2' | sudo tee -a /etc/fstab
+  configure_hdd
 
   sudo mount "$mountdir"
 
   systemctl reboot
 }
+
+
+function configure_hdd() {
+  cat <<EOF | sudo tee -a /etc/hdparm.conf
+/dev/disk/by-uuid/$UUID {
+	spindown_time = 60
+	write_cache = off
+}
+EOF
+}
+
 
 if ! sudo -v
 then
