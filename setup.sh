@@ -51,7 +51,7 @@ fi
 scriptdir=/opt/DLNA
 mountdir=/media/Daten # Do not change lighthearted. Unfortunately, this path is
                       # hardcoded in other scripts too!
-UUID=26c17045-5c31-4fe4-abb0-d30eac4cfe6f
+UUID=a9169522-d764-45d9-bf35-56dc25b5fd5f
 
 # SETTING UP THE HDD
 # It does not seem to be appropriate to script the setup of the HDD. However,
