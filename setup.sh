@@ -21,7 +21,7 @@ set -euo pipefail
 # 4. Adapt the entry to /etc/fstab by adding the appropriate UUID.
 
 function setup_server() {
-  sudo apt install minidlna
+  sudo apt --assume-yes install minidlna
 
   sudo rm "$global_conf"
   sudo ln -s "$scriptdir/minidlna.conf" "$global_conf"
