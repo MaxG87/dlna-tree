@@ -20,6 +20,18 @@ set -euo pipefail
 # 3. Adapt user and group of files, e.g. via `chown $USER:dlnausers -R /path/to/mount/of/device/music`.
 # 4. Adapt the entry to /etc/fstab by adding the appropriate UUID.
 
+
+function create_necessary_directories() {
+    sudo mkdir -p "$mountdir"
+    sudo mkdir -p "$scriptdir"
+}
+
+
+function move_script_to_scriptdir() {
+    sudo cp * "$scriptdir"
+}
+
+
 function setup_server() {
   sudo apt --assume-yes install minidlna
 
@@ -62,8 +74,8 @@ mountdir=/media/Daten # Do not change lighthearted. Unfortunately, this path is
 scriptdir=/opt/DLNA
 UUID=a9169522-d764-45d9-bf35-56dc25b5fd5f
 
-sudo mkdir -p "$scriptdir" "$mountdir"
-# TODO Move DLNA files to $scriptdir.
+create_necessary_directories
+move_script_to_scriptdir
 setup_server
 configure_hdd
 sudo mount "$mountdir"
