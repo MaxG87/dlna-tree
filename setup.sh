@@ -5,6 +5,19 @@
 # can be used to automate the setup. Albeit it was tested successfully, it
 # should be used with care.
 
+# SETTING UP THE HDD
+# It does not seem to be appropriate to script the setup of the HDD. However,
+# it shall be documented briefly:
+#
+# 1. Ensure that there is a partition with a sane file system. Ext4 or BTRFS
+#    will do.
+# 2. Add the music, e.g. via `rsync -a --progress /path/to/music /path/to/mount/of/device/`.
+#    It is important to ommit the '/' at the end of the first path. Note
+#    further that currently the folder containing the music must be of name
+#    'Musik'.
+# 3. Adapt user and group of files, e.g. via `chown $USER:dlnausers -R /path/to/mount/of/device/music`.
+# 4. Adapt the entry to /etc/fstab by adding the appropriate UUID.
+
 function setup_server() {
   sudo apt install minidlna
 
@@ -46,19 +59,6 @@ mountdir=/media/Daten # Do not change lighthearted. Unfortunately, this path is
                       # hardcoded in other scripts too!
 scriptdir=/opt/DLNA
 UUID=a9169522-d764-45d9-bf35-56dc25b5fd5f
-
-# SETTING UP THE HDD
-# It does not seem to be appropriate to script the setup of the HDD. However,
-# it shall be documented briefly:
-#
-# 1. Ensure that there is a partition with a sane file system. Ext4 or BTRFS
-#    will do.
-# 2. Add the music, e.g. via `rsync -a --progress /path/to/music /path/to/mount/of/device/`.
-#    It is important to ommit the '/' at the end of the first path. Note
-#    further that currently the folder containing the music must be of name
-#    'Musik'.
-# 3. Adapt user and group of files, e.g. via `chown $USER:dlnausers -R /path/to/mount/of/device/music`.
-# 4. Adapt the entry to /etc/fstab by adding the appropriate UUID.
 
 sudo mkdir -p "$scriptdir" "$mountdir"
 # TODO Move DLNA files to $scriptdir.
