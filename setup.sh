@@ -26,9 +26,9 @@ function setup_server() {
   sudo rm "$global_conf"
   sudo ln -s "$scriptdir/minidlna.conf" "$global_conf"
 
-  # Create and populate a new group `dlnausers'. This group is needed to restrict
-  # the write access to music files as far as possible. Assuming an existing HDD
-  # with data, everything should be setup correctly.
+  # Create and populate a new group `dlnausers'. This group is needed to
+  # restrict the write access to music files as far as possible. Assuming an
+  # existing HDD with data, everything should be setup correctly.
   newgroup=dlnausers
   sudo groupadd $newgroup
   sudo adduser $USER $newgroup
