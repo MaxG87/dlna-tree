@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # This script is intended to list all the subtle details that have to be taken
 # care of when setting up the DLNA server. The intention is that this script
 # can be used to automate the setup. Albeit it was tested successfully, it
