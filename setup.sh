@@ -33,27 +33,27 @@ function move_script_to_scriptdir() {
 
 
 function setup_server() {
-  sudo apt --assume-yes install minidlna
+    sudo apt --assume-yes install minidlna
 
-  sudo rm "$global_conf"
-  sudo ln -s "$scriptdir/minidlna.conf" "$global_conf"
+    sudo rm "$global_conf"
+    sudo ln -s "$scriptdir/minidlna.conf" "$global_conf"
 
-  # Create and populate a new group `dlnausers'. This group is needed to
-  # restrict the write access to music files as far as possible. Assuming an
-  # existing HDD with data, everything should be setup correctly.
-  newgroup=dlnausers
-  sudo groupadd $newgroup
-  sudo adduser $USER $newgroup
-  sudo adduser minidlna $newgroup
+    # Create and populate a new group `dlnausers'. This group is needed to
+    # restrict the write access to music files as far as possible. Assuming an
+    # existing HDD with data, everything should be setup correctly.
+    newgroup=dlnausers
+    sudo groupadd $newgroup
+    sudo adduser $USER $newgroup
+    sudo adduser minidlna $newgroup
 
-  # Add configuration lines to corresponding files
-  echo "00 4  * * * minidlna /opt/DLNA/dlna_einrichten.sh" | sudo tee -a /etc/crontab
-  echo "UUID=\"$UUID\"" "$mountdir" 'btrfs defaults,nofail 0 2' | sudo tee -a /etc/fstab
+    # Add configuration lines to corresponding files
+    echo "00 4  * * * minidlna /opt/DLNA/dlna_einrichten.sh" | sudo tee -a /etc/crontab
+    echo "UUID=\"$UUID\"" "$mountdir" 'btrfs defaults,nofail 0 2' | sudo tee -a /etc/fstab
 }
 
 
 function configure_hdd() {
-  cat <<EOF | sudo tee -a /etc/hdparm.conf
+    cat <<EOF | sudo tee -a /etc/hdparm.conf
 /dev/disk/by-uuid/$UUID {
 	spindown_time = 60
 	write_cache = off
@@ -64,8 +64,8 @@ EOF
 
 if ! sudo -v
 then
-  echo Root privileges are required! >&2
-  exit 1
+    echo Root privileges are required! >&2
+    exit 1
 fi
 
 global_conf=/etc/minidlna.conf
