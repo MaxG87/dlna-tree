@@ -6,7 +6,7 @@
 # should be used with care.
 
 function setup_server() {
-  sudo aptitude install minidlna
+  sudo apt install minidlna
 
   global_conf=/etc/minidlna.conf
   sudo rm "$global_conf"
