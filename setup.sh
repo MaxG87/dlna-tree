@@ -8,14 +8,12 @@
 function setup_server() {
   sudo apt install minidlna
 
-  global_conf=/etc/minidlna.conf
   sudo rm "$global_conf"
   sudo ln -s "$scriptdir/minidlna.conf" "$global_conf"
 
   # Create and populate a new group `dlnausers'. This group is needed to restrict
   # the write access to music files as far as possible. Assuming an existing HDD
-  # with data, everything should be setup correctly. How to configure the HDD is
-  # not part of this documentation and thus currently not documented.
+  # with data, everything should be setup correctly.
   newgroup=dlnausers
   sudo groupadd $newgroup
   sudo adduser $USER $newgroup
@@ -24,11 +22,6 @@ function setup_server() {
   # Add configuration lines to corresponding files
   echo "00 4  * * * minidlna /opt/DLNA/dlna_einrichten.sh" | sudo tee -a /etc/crontab
   echo "UUID=\"$UUID\"" "$mountdir" 'btrfs defaults,nofail 0 2' | sudo tee -a /etc/fstab
-  configure_hdd
-
-  sudo mount "$mountdir"
-
-  systemctl reboot
 }
 
 
@@ -48,9 +41,10 @@ then
   exit 1
 fi
 
-scriptdir=/opt/DLNA
+global_conf=/etc/minidlna.conf
 mountdir=/media/Daten # Do not change lighthearted. Unfortunately, this path is
                       # hardcoded in other scripts too!
+scriptdir=/opt/DLNA
 UUID=a9169522-d764-45d9-bf35-56dc25b5fd5f
 
 # SETTING UP THE HDD
@@ -69,3 +63,6 @@ UUID=a9169522-d764-45d9-bf35-56dc25b5fd5f
 sudo mkdir -p "$scriptdir" "$mountdir"
 # TODO Move DLNA files to $scriptdir.
 setup_server
+configure_hdd
+sudo mount "$mountdir"
+systemctl reboot
