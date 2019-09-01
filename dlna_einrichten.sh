@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 #Konstanten definieren
 dlna_dir=/media/Daten/DLNA
 dlna_cache=/media/Daten/dlna_cache
