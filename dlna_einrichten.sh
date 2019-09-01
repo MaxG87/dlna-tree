@@ -46,15 +46,4 @@ do
   ln -s "$cur_dir" "$dlna_dir/${pre_number}_$album_name"
 done
 
-# Berechtigungen für MiniDLNA wieder herstellen
-# Eigentümer ist minidlna, aber alle dürfen Lesen und Ordner öffnen. Niemand
-# darf mehr.
-chown minidlna:dlnausers -R "$dlna_dir"
-chown minidlna:minidlna -R "$dlna_cache"
-for folder in "$dlna_dir" "$dlna_cache"
-do
-  find "$folder" -type f -exec chmod 660 {} +
-  find "$folder" -type d -exec chmod 770 {} +
-done
-
 minidlnad -u minidlna -R -f /opt/DLNA/minidlna.conf
