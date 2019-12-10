@@ -46,6 +46,6 @@ do
   ln -s "$cur_dir" "$dlna_dir/${pre_number}_$album_name"
 done
 
-chown dlnausers:dlnausers -R "$musik_dir"
+chown mgoerner:dlnausers -R "$musik_dir"
 chown minidlna:minidlna -R "$dlna_dir"
 systemctl start minidlna.service
