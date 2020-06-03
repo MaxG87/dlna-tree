@@ -18,7 +18,8 @@ set -euo pipefail
 #    further that currently the folder containing the music must be of name
 #    'Musik'.
 # 3. Adapt user and group of files, e.g. via `chown $USER:dlnausers -R /path/to/mount/of/device/music`.
-# 4. Adapt the entry to /etc/fstab by adding the appropriate UUID.
+# 4. Adapt the entry to /etc/fstab by adding the appropriate UUID. The UUID can
+#    be determined using `blkid`.
 
 
 function create_necessary_directories() {
