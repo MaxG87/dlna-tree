@@ -11,7 +11,7 @@ musik_dir=/media/Daten/Musik
 IFS=$(echo -en "\n\b")
 
 #DLNA-Server anhalten und etwas aufräumen
-systemctl stop minidlna.service
+/etc/init.d/minidlna stop
 rm -rf $dlna_dir
 mkdir $dlna_dir
 
@@ -48,4 +48,4 @@ done
 
 chown $USER:dlnausers -R "$musik_dir"
 chown minidlna:minidlna -R "$dlna_dir"
-systemctl start minidlna.service
+/etc/init.d/minidlna start
