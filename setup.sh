@@ -17,8 +17,11 @@ set -euo pipefail
 #    It is important to ommit the '/' at the end of the first path. Note
 #    further that currently the folder containing the music must be of name
 #    'Musik'.
-# 3. Adapt user and group of files, e.g. via `chown $USER:dlnausers -R /path/to/mount/of/device/music`.
-# 4. Adapt the entry to /etc/fstab by adding the appropriate UUID.
+# 3. Adapt the entry to /etc/fstab by adding the appropriate UUID. The UUID can
+#    be determined using `blkid`.
+# 4. Double check the ownership and permissions on /media/Daten/ and
+#    /media/Daten/Musik. There is a draft function to set these up, but its not
+#    yet tested.
 
 
 function create_necessary_directories() {
@@ -52,6 +55,12 @@ function setup_server() {
 }
 
 
+function setup_file_permissions() {
+    # THIS FUNCTION WAS NEVER RUN!
+    sudo chown $USER:dlnausers -R "$mountdir"
+    sudo chmod 775 "$mountdir"
+}
+
 function configure_hdd() {
     cat <<EOF | sudo tee -a /etc/hdparm.conf
 /dev/disk/by-uuid/$UUID {
@@ -71,12 +80,15 @@ fi
 global_conf=/etc/minidlna.conf
 mountdir=/media/Daten # Do not change lighthearted. Unfortunately, this path is
                       # hardcoded in other scripts too!
+dlnadir="$mountdir/DLNA"
+musicdir="$mountdir/Musik"
 scriptdir=/opt/DLNA
 UUID=a9169522-d764-45d9-bf35-56dc25b5fd5f
 
 create_necessary_directories
 move_script_to_scriptdir
 setup_server
+setup_file_permissions
 configure_hdd
 sudo mount "$mountdir"
 systemctl reboot
