@@ -83,7 +83,7 @@ mountdir=/media/Daten # Do not change lighthearted. Unfortunately, this path is
 dlnadir="$mountdir/DLNA"
 musicdir="$mountdir/Musik"
 scriptdir=/opt/DLNA
-UUID=a9169522-d764-45d9-bf35-56dc25b5fd5f
+UUID=225b6455-f49d-4363-b3d3-dc6e163c82ce
 
 create_necessary_directories
 move_script_to_scriptdir

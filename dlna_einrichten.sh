@@ -2,16 +2,22 @@
 
 set -euo pipefail
 
+function user_from_dir() {
+    dir="$1"
+    ls -ld "$dir" | awk '{print $3}'
+}
+
 #Konstanten definieren
 dlna_dir=/media/Daten/DLNA
 dlna_cache=/media/Daten/dlna_cache
 baum_dir=$dlna_dir/00_Baum
 liste_dir=$dlna_dir/01_Liste
 musik_dir=/media/Daten/Musik
+musik_dir_owner="${USER:-$(user_from_dir "$musik_dir")}"
 IFS=$(echo -en "\n\b")
 
 #DLNA-Server anhalten und etwas aufräumen
-systemctl stop minidlna.service
+/etc/init.d/minidlna stop
 rm -rf $dlna_dir
 mkdir $dlna_dir
 
@@ -46,6 +52,6 @@ do
   ln -s "$cur_dir" "$dlna_dir/${pre_number}_$album_name"
 done
 
-chown $USER:dlnausers -R "$musik_dir"
+chown "$musik_dir_owner":dlnausers -R "$musik_dir"
 chown minidlna:minidlna -R "$dlna_dir"
-systemctl start minidlna.service
+/etc/init.d/minidlna start
