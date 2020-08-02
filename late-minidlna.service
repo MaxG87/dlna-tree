@@ -23,3 +23,6 @@ RemainAfterExit=yes
 SuccessExitStatus=5 6
 ExecStart=/etc/init.d/minidlna start
 ExecStop=/etc/init.d/minidlna stop
+
+[Install]
+WantedBy=multi-user.target
