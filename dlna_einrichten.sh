@@ -37,7 +37,11 @@ done
 num_rand_screens=2
 num_screen_items=4
 num_rand_dir=$(($num_screen_items * $num_rand_screens - 2)) # Baum und Liste abziehen
-shuf_arr=($(find "$liste_dir" -iregex '.*\(ogg\|mp3\|flac\|wma\)' -exec dirname {} + | grep -vE 'Hörbücher|Kinder-' | sort -u | shuf -n$num_rand_dir))
+shuf_arr=($(find "$liste_dir" -iregex '.*\(ogg\|mp3\|flac\|wma\)' -exec dirname {} + |
+    grep -vE 'Hörbücher|Kinder-|Känguru' |
+    sort -u |
+    shuf -n$num_rand_dir)
+    )
 for it in $(seq 0 $(($num_rand_dir - 1)))
 do
   pre_number=$(printf "%02d" $(($it + 2)))
