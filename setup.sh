@@ -44,7 +44,7 @@ function setup_server() {
     # Create and populate a new group `dlnausers'. This group is needed to
     # restrict the write access to music files as far as possible. Assuming an
     # existing HDD with data, everything should be setup correctly.
-    newgroup=dlnausers
+    local newgroup=dlnausers
     sudo groupadd $newgroup
     sudo adduser $USER $newgroup
     sudo adduser minidlna $newgroup
@@ -52,8 +52,16 @@ function setup_server() {
     # Add configuration lines to corresponding files
     echo "00 4  * * * root /opt/DLNA/dlna_einrichten.sh" | sudo tee -a /etc/crontab
     echo "UUID=\"$UUID\"" "$mountdir" 'btrfs defaults,nofail 0 2' | sudo tee -a /etc/fstab
+
+    register_custom_systemd_service
 }
 
+function register_custom_systemd_service() {
+    local service_f=late-minidlna.service 
+    local systemd_dir="/etc/systemd/system/"
+    sudo cp "$service_f" "$systemd_dir"
+    sudo ln -s "$systemd_dir/$service_f" "$systemd_dir/multi-user.target.wants"
+}
 
 function setup_file_permissions() {
     sudo chown $USER:dlnausers -R "$mountdir"
