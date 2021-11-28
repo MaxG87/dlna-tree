@@ -88,7 +88,7 @@ UUID=e4441177-9669-4b64-9a86-c383e3b63464
 create_necessary_directories
 move_script_to_scriptdir
 setup_server
-setup_file_permissions
 configure_hdd
 sudo mount "$mountdir"
+setup_file_permissions
 systemctl reboot
