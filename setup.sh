@@ -56,7 +56,6 @@ function setup_server() {
 
 
 function setup_file_permissions() {
-    # THIS FUNCTION WAS NEVER RUN!
     sudo chown $USER:dlnausers -R "$mountdir"
     sudo chmod 775 "$mountdir"
 }
