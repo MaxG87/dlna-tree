@@ -399,7 +399,7 @@ def main():
     #   2) only doubles as values
     #   3) all keys are valid folders, otherwise warn or something
     script_dir = os.path.dirname(__file__)
-    custom_weights_file = os.path.join(script_dir, "custom_weights.json")
+    custom_weights_file = os.path.join(script_dir, "custom-weights.json")
     with open(custom_weights_file) as f:
         custom_weights = json.load(f)
     weight_dict = {f: 1 for f in folder_list}

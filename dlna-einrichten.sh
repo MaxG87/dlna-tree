@@ -31,7 +31,7 @@ do
 done
 
 #Pseudo-BBaum bauen
-(cd "$baum_dir" ; /opt/DLNA/baue_baum.py)
+(cd "$baum_dir" ; /opt/DLNA/baue-baum.py)
 
 #Zufällige Ordner verlinken
 num_rand_screens=2

@@ -50,7 +50,7 @@ function setup_server() {
     sudo adduser minidlna $newgroup
 
     # Add configuration lines to corresponding files
-    echo "00 4  * * * root /opt/DLNA/dlna_einrichten.sh" | sudo tee -a /etc/crontab
+    echo "00 4  * * * root /opt/DLNA/dlna-einrichten.sh" | sudo tee -a /etc/crontab
     echo "UUID=\"$UUID\"" "$mountdir" 'btrfs defaults,nofail 0 2' | sudo tee -a /etc/fstab
 
     register_custom_systemd_service
