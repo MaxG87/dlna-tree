@@ -57,10 +57,10 @@ function setup_server() {
 }
 
 function register_custom_systemd_service() {
-    local service_f=late-minidlna.service 
+    local service_f=minidlna.service
     local systemd_dir="/etc/systemd/system/"
     sudo cp "$service_f" "$systemd_dir"
-    sudo ln -s "$systemd_dir/$service_f" "$systemd_dir/multi-user.target.wants"
+    sudo ln -fs "$systemd_dir/$service_f" "$systemd_dir/multi-user.target.wants"
 }
 
 function setup_file_permissions() {

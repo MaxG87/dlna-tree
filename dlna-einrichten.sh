@@ -17,7 +17,7 @@ musik_dir_owner="${USER:-$(user_from_dir "$musik_dir")}"
 IFS=$(echo -en "\n\b")
 
 #DLNA-Server anhalten und etwas aufräumen
-/etc/init.d/minidlna stop
+service minidlna stop
 rm -rf $dlna_dir
 mkdir $dlna_dir
 
@@ -58,4 +58,4 @@ done
 
 chown "$musik_dir_owner":dlnausers -R "$musik_dir"
 chown minidlna:minidlna -R "$dlna_dir"
-/etc/init.d/minidlna start
+service minidlna start
