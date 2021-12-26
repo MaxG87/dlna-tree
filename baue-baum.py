@@ -185,7 +185,6 @@ def move_recursively(cwd, folder_list, weight_dict, split_positions):
 def bruteforce_worker(
     folder_list, weight_dict, cache, split_positions, max_branching_factor, access_type
 ):
-    ret_move_instructions = []
     num_elems = len(folder_list)
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
     sum_of_weights = sum(weight_tuple)
@@ -284,7 +283,6 @@ def get_ratio_splitpositions(weight_tuple, ratios):
 
     split_positions = ()
 
-    num_elems = len(weight_tuple)
     base_ind = 0
     rescale_ratio = 1
     # The last ratio is not included, as only the positions to split are
