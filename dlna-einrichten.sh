@@ -42,7 +42,7 @@ shuf_arr=($(find "$liste_dir" -iregex '.*\(ogg\|mp3\|flac\|wma\)' -exec dirname 
     sort -u |
     shuf -n$num_rand_dir)
     )
-for it in $(seq 0 $((num_rand_dir - 1)))
+for ((it=0; it<num_rand_dir; it++))
 do
   pre_number=$(printf "%02d" $((it + 2)))
   cur_dir="${shuf_arr[$it]}"
