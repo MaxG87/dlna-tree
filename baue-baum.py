@@ -4,12 +4,14 @@ import json
 import os
 import shutil
 
+from typing import Iterable
+
 
 class IllegalArgumentException(Exception):
     pass
 
 
-def get_access_cost(max_branching_factor, access_type):
+def get_access_cost(max_branching_factor: int, access_type: str) -> Iterable[float]:
     """
     Returns list of access costs
 
@@ -19,34 +21,30 @@ def get_access_cost(max_branching_factor, access_type):
 
     Parameter
     ---------
-    max_branching_factor: double
-        How many subelements are there.
-    access_type: str
-        Specifies the costs for each element:
+    max_branching_factor: How many subelements are there.
+    access_type: Specifies the costs for each element. Possible values are:
             linear: linear, i.e. one "cost" to traverse one element
             wrappable: linear, but with connection between first and last elem
             constant: 1 for each element
 
     Returns
     -------
-    costs: list of doubles
-        list of doubles, each stating the cost to choose the corresponding
-        element
+    costs: iterable of floats, each stating the cost to choose the
+           corresponding element
     """
     if access_type == "wrappable":
-        costs = [1] + [
+        return [1] + [
             min(n, max_branching_factor - n) + 1 for n in range(1, max_branching_factor)
         ]
     elif access_type == "linear":
-        costs = range(1, max_branching_factor + 1)
+        return range(1, max_branching_factor + 1)
     elif access_type == "constant":
-        costs = [1] * max_branching_factor
+        return [1] * max_branching_factor
     else:
         raise IllegalArgumentException(
             "access_type `{access_type}' not defined".format(access_type=access_type)
         )
 
-    return costs
 
 
 def get_folder_list(cwd):
