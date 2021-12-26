@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 
 import json
 import os
@@ -46,8 +47,7 @@ def get_access_cost(max_branching_factor: int, access_type: str) -> Iterable[flo
         )
 
 
-
-def get_folder_list(cwd):
+def get_folder_list(cwd: str) -> list[str]:
     """
     Glob folder and sort content alphabetically
 
