@@ -4,12 +4,12 @@ from __future__ import annotations
 import json
 import os
 import shutil
+from typing import Iterable, List, Mapping, Tuple
 
-from typing import Iterable, Mapping, Tuple
-
+FOLDER_LIST_T = List[str]
+SPLIT_POS_T = Tuple[int, ...]
 WEIGHT_TUPLE_T = Tuple[float, ...]
 CACHE_T = dict[WEIGHT_TUPLE_T, float]
-SPLIT_POS_T = Tuple[int, ...]
 SPLIT_POS_MAPPING_T = dict[WEIGHT_TUPLE_T, Tuple[int, ...]]
 
 
@@ -52,7 +52,7 @@ def get_access_cost(max_branching_factor: int, access_type: str) -> Iterable[flo
         )
 
 
-def get_folder_list(cwd: str) -> list[str]:
+def get_folder_list(cwd: str) -> FOLDER_LIST_T:
     """
     Glob folder and sort content alphabetically
 
@@ -87,27 +87,31 @@ def get_ratios(costs: Iterable[float]) -> list[float]:
     return ratios
 
 
-def split_to_lists(inlist: list[str], insplit) -> list[list]:
+def split_to_lists(inlist: FOLDER_LIST_T, insplit: SPLIT_POS_T) -> list[FOLDER_LIST_T]:
     split = (0,) + insplit + (len(inlist),)
     ret = [inlist[start:end] for start, end in zip(split[:-1], split[1:])]
     return ret
 
 
-def iter_nsplits(num_elems, num_splits, start=1, ret_tuple=()):
+def iter_nsplits(
+    num_elems: int, num_splits: int, start_idx: int = 1, start_tuple: SPLIT_POS_T = ()
+) -> Iterable[SPLIT_POS_T]:
     if num_splits == 0:
-        yield ret_tuple
+        yield start_tuple
         return
-    for split_pos in range(start, num_elems - num_splits + 1):
-        new_tuple = ret_tuple + (split_pos,)
+    for split_pos in range(start_idx, num_elems - num_splits + 1):
+        new_tuple = start_tuple + (split_pos,)
         yield from iter_nsplits(
             num_elems=num_elems,
             num_splits=num_splits - 1,
-            start=split_pos + 1,
-            ret_tuple=new_tuple,
+            start_idx=split_pos + 1,
+            start_tuple=new_tuple,
         )
 
 
-def move_folders(cwd, move_instructions, len_of_shortcut):
+def move_folders(
+    cwd: str, move_instructions: list[list], len_of_shortcut: int
+) -> FOLDER_LIST_T:
     """
     Moves multiple elements into same subfolder
 
@@ -158,7 +162,7 @@ def move_folders(cwd, move_instructions, len_of_shortcut):
 
 def move_recursively(
     cwd: str,
-    folder_list: list[str],
+    folder_list: FOLDER_LIST_T,
     weight_dict: Mapping[str, float],
     split_positions: SPLIT_POS_MAPPING_T,
 ) -> None:
@@ -193,7 +197,7 @@ def move_recursively(
 
 
 def bruteforce_worker(
-    folder_list: list[str],
+    folder_list: FOLDER_LIST_T,
     weight_dict: Mapping[str, float],
     cache: CACHE_T,
     split_positions: SPLIT_POS_MAPPING_T,
@@ -220,7 +224,7 @@ def bruteforce_worker(
         split_positions[weight_tuple] = ()
         return sum_of_weights, total_costs
 
-    best_split = ()
+    best_split: SPLIT_POS_T = ()
     best_split_cost = float(0xCAFFEBABE)
     costs = get_access_cost(
         max_branching_factor=max_branching_factor, access_type=access_type
@@ -254,11 +258,11 @@ def bruteforce_worker(
 
 def bruteforce(
     cwd: str,
-    folder_list: list[str],
+    folder_list: FOLDER_LIST_T,
     weight_dict: Mapping[str, float],
     max_branching_factor: int,
     access_type: str,
-):
+) -> SPLIT_POS_MAPPING_T:
     cache: CACHE_T = {}
     split_positions: SPLIT_POS_MAPPING_T = {}
     _, total_costs = bruteforce_worker(
@@ -360,18 +364,27 @@ def get_ratio_splitpositions(
 
 def ratio_based_tree(
     cwd: str,
-    folder_list: list[str],
+    folder_list: FOLDER_LIST_T,
     weight_dict: Mapping[str, float],
     access_type: str,
     max_branching_factor: int,
     split_positions: SPLIT_POS_MAPPING_T,
     cache: CACHE_T,
-):
+) -> None:
+    """
+    Returns:
+    --------
+    The important calculations are stored in split_positions.
+
+    Side Effects:
+    -------------
+    The input variables cache and split_positions are manipulated.
+    """
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
     num_elems = len(folder_list)
 
     if weight_tuple in cache:
-        return cache[weight_tuple]
+        return
     if num_elems <= max_branching_factor:
         costs = get_access_cost(max_branching_factor=num_elems, access_type=access_type)
         # Subfolders which would hold only a single element will not be
@@ -383,7 +396,7 @@ def ratio_based_tree(
         )
         cache[weight_tuple] = total_costs
         split_positions[weight_tuple] = ()
-        return total_costs
+        return
 
     costs = get_access_cost(
         max_branching_factor=max_branching_factor, access_type=access_type
@@ -407,10 +420,8 @@ def ratio_based_tree(
             access_type=access_type,
         )
 
-    return split_positions
 
-
-def main():
+def main() -> None:
     cwd = os.getcwd()
     folder_list = get_folder_list(cwd=cwd)
 
@@ -435,7 +446,8 @@ def main():
     #     max_branching_factor=max_branching_factor,
     #     access_type=access_type,
     # )
-    split_positions = ratio_based_tree(
+    split_positions: SPLIT_POS_MAPPING_T = {}
+    ratio_based_tree(
         access_type=access_type,
         cache={},
         cwd=cwd,
