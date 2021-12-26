@@ -4,7 +4,7 @@ set -euo pipefail
 
 function user_from_dir() {
     dir="$1"
-    ls -ld "$dir" | awk '{print $3}'
+    stat -c %u "$dir"
 }
 
 #Konstanten definieren
