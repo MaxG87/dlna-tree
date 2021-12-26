@@ -51,7 +51,10 @@ def get_access_cost(max_branching_factor, access_type):
 
 def get_folder_list(cwd):
     """
-    Glob folder and sort them alphabetically
+    Glob folder and sort content alphabetically
+
+    The sorting treats umlauts as their non-umlaut counterparts, according to
+    German rules.
     """
     tr_dict = str.maketrans("ÄÖÜäöü", "AOUaou")
     folder_list = sorted(os.listdir(cwd), key=lambda s: s.translate(tr_dict).lower())
