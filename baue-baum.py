@@ -42,7 +42,7 @@ def get_access_cost(max_branching_factor, access_type):
     elif access_type == "constant":
         costs = [1] * max_branching_factor
     else:
-        return IllegalArgumentException(
+        raise IllegalArgumentException(
             "access_type `{access_type}' not defined".format(access_type=access_type)
         )
 
