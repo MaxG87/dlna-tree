@@ -5,7 +5,12 @@ import json
 import os
 import shutil
 
-from typing import Iterable
+from typing import Iterable, Mapping, Tuple
+
+WEIGHT_TUPLE_T = Tuple[float, ...]
+CACHE_T = dict[WEIGHT_TUPLE_T, float]
+SPLIT_POS_T = Tuple[int, ...]
+SPLIT_POS_MAPPING_T = dict[WEIGHT_TUPLE_T, Tuple[int, ...]]
 
 
 class IllegalArgumentException(Exception):
@@ -82,10 +87,10 @@ def get_ratios(costs: Iterable[float]) -> list[float]:
     return ratios
 
 
-def split_to_lists(inlist, insplit):
+def split_to_lists(inlist: list[str], insplit) -> list[list]:
     split = (0,) + insplit + (len(inlist),)
-    ret_tuple = (inlist[start:end] for start, end in zip(split[:-1], split[1:]))
-    return ret_tuple
+    ret = [inlist[start:end] for start, end in zip(split[:-1], split[1:])]
+    return ret
 
 
 def iter_nsplits(num_elems, num_splits, start=1, ret_tuple=()):
@@ -151,7 +156,12 @@ def move_folders(cwd, move_instructions, len_of_shortcut):
     return ret_list
 
 
-def move_recursively(cwd, folder_list, weight_dict, split_positions):
+def move_recursively(
+    cwd: str,
+    folder_list: list[str],
+    weight_dict: Mapping[str, float],
+    split_positions: SPLIT_POS_MAPPING_T,
+) -> None:
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
 
     if len(split_positions[weight_tuple]) == 0:
@@ -183,8 +193,13 @@ def move_recursively(cwd, folder_list, weight_dict, split_positions):
 
 
 def bruteforce_worker(
-    folder_list, weight_dict, cache, split_positions, max_branching_factor, access_type
-):
+    folder_list: list[str],
+    weight_dict: Mapping[str, float],
+    cache: CACHE_T,
+    split_positions: SPLIT_POS_MAPPING_T,
+    max_branching_factor: int,
+    access_type: str,
+) -> tuple[float, float]:
     num_elems = len(folder_list)
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
     sum_of_weights = sum(weight_tuple)
@@ -199,14 +214,14 @@ def bruteforce_worker(
         # have inner costs. Their access costs are considered on recursion
         # level earlier.
         total_costs = (
-            0 if num_elems == 1 else sum(c * w for c, w in zip(costs, weight_tuple))
+            0.0 if num_elems == 1 else sum(c * w for (c, w) in zip(costs, weight_tuple))
         )
         cache[weight_tuple] = total_costs
         split_positions[weight_tuple] = ()
         return sum_of_weights, total_costs
 
     best_split = ()
-    best_split_cost = 0xCAFFEBABE
+    best_split_cost = float(0xCAFFEBABE)
     costs = get_access_cost(
         max_branching_factor=max_branching_factor, access_type=access_type
     )
@@ -237,9 +252,15 @@ def bruteforce_worker(
     return sum_of_weights, best_split_cost
 
 
-def bruteforce(cwd, folder_list, weight_dict, max_branching_factor, access_type):
-    cache = {}
-    split_positions = {}
+def bruteforce(
+    cwd: str,
+    folder_list: list[str],
+    weight_dict: Mapping[str, float],
+    max_branching_factor: int,
+    access_type: str,
+):
+    cache: CACHE_T = {}
+    split_positions: SPLIT_POS_MAPPING_T = {}
     _, total_costs = bruteforce_worker(
         folder_list=folder_list,
         weight_dict=weight_dict,
@@ -251,7 +272,9 @@ def bruteforce(cwd, folder_list, weight_dict, max_branching_factor, access_type)
     return split_positions
 
 
-def get_ratio_splitpositions(weight_tuple, ratios):
+def get_ratio_splitpositions(
+    weight_tuple: WEIGHT_TUPLE_T, ratios: list[float]
+) -> SPLIT_POS_T:
     """
     Get appropriate split positions
 
@@ -266,14 +289,14 @@ def get_ratio_splitpositions(weight_tuple, ratios):
 
     Parameters
     ----------
-    weight_tuple: tuple of doubles
+    weight_tuple:
         A tuple containing the weight for each element to consider.
-    ratios: tuple of doubles
+    ratios:
         The ratio of elements weights to be stored in each subfolder.
 
     Returns
     -------
-    split_positions: tuple of indices
+    split_positions:
         A tuple of n-1 doubles, with n == len(ratios). The elements of
         split_positions specify the first items (each corresponding to an
         element of weight_tuple) not to be included in the subfolders that are
@@ -281,10 +304,10 @@ def get_ratio_splitpositions(weight_tuple, ratios):
         split_positions directly in Python ranges.
     """
 
-    split_positions = ()
+    split_positions: SPLIT_POS_T = ()
 
     base_ind = 0
-    rescale_ratio = 1
+    rescale_ratio = 1.0
     # The last ratio is not included, as only the positions to split are
     # calculated. Thus, the remaining elements automatically form the last
     # partition.
@@ -336,13 +359,13 @@ def get_ratio_splitpositions(weight_tuple, ratios):
 
 
 def ratio_based_tree(
-    cwd,
-    folder_list,
-    weight_dict,
-    access_type,
-    max_branching_factor,
-    split_positions={},
-    cache={},
+    cwd: str,
+    folder_list: list[str],
+    weight_dict: Mapping[str, float],
+    access_type: str,
+    max_branching_factor: int,
+    split_positions: SPLIT_POS_MAPPING_T,
+    cache: CACHE_T,
 ):
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
     num_elems = len(folder_list)
@@ -356,7 +379,7 @@ def ratio_based_tree(
         # have inner costs. Their access costs are considered one recursion
         # level earlier.
         total_costs = (
-            0 if num_elems == 1 else sum(c * w for c, w in zip(costs, weight_tuple))
+            0.0 if num_elems == 1 else sum(c * w for c, w in zip(costs, weight_tuple))
         )
         cache[weight_tuple] = total_costs
         split_positions[weight_tuple] = ()
@@ -400,20 +423,26 @@ def main():
     custom_weights_file = os.path.join(script_dir, "custom-weights.json")
     with open(custom_weights_file) as f:
         custom_weights = json.load(f)
-    weight_dict = {f: 1 for f in folder_list}
+    weight_dict = {f: 1.0 for f in folder_list}
     weight_dict.update(custom_weights)
 
     max_branching_factor = 4
     access_type = "wrappable"
-    # split_positions = bruteforce(cwd=cwd, folder_list=folder_list,
-    #     weight_dict=weight_dict, max_branching_factor=max_branching_factor,
-    #     access_type=access_type)
+    # split_positions = bruteforce(
+    #     cwd=cwd,
+    #     folder_list=folder_list,
+    #     weight_dict=weight_dict,
+    #     max_branching_factor=max_branching_factor,
+    #     access_type=access_type,
+    # )
     split_positions = ratio_based_tree(
+        access_type=access_type,
+        cache={},
         cwd=cwd,
         folder_list=folder_list,
-        weight_dict=weight_dict,
         max_branching_factor=max_branching_factor,
-        access_type=access_type,
+        split_positions={},
+        weight_dict=weight_dict,
     )
     move_recursively(
         cwd=cwd,
