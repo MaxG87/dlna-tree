@@ -36,18 +36,18 @@ done
 #Zufällige Ordner verlinken
 num_rand_screens=2
 num_screen_items=4
-num_rand_dir=$(($num_screen_items * $num_rand_screens - 2)) # Baum und Liste abziehen
+num_rand_dir=$((num_screen_items * num_rand_screens - 2)) # Baum und Liste abziehen
 shuf_arr=($(find "$liste_dir" -iregex '.*\(ogg\|mp3\|flac\|wma\)' -exec dirname {} + |
     grep -vE 'Hörbücher|Kinder-|Känguru' |
     sort -u |
     shuf -n$num_rand_dir)
     )
-for it in $(seq 0 $(($num_rand_dir - 1)))
+for it in $(seq 0 $((num_rand_dir - 1)))
 do
-  pre_number=$(printf "%02d" $(($it + 2)))
+  pre_number=$(printf "%02d" $((it + 2)))
   cur_dir="${shuf_arr[$it]}"
   album_name="$(basename "$cur_dir")"
-  if echo $album_name | grep -qxiE '(CD)?[ _]?[0-9]+'
+  if echo "$album_name" | grep -qxiE '(CD)?[ _]?[0-9]+'
   then
     pre_dir="$(dirname "$cur_dir")"
     real_album="$(basename "$pre_dir")"

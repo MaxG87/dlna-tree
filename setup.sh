@@ -31,7 +31,7 @@ function create_necessary_directories() {
 
 
 function move_script_to_scriptdir() {
-    sudo cp * "$scriptdir"
+    sudo cp ./* "$scriptdir"
 }
 
 
@@ -46,7 +46,7 @@ function setup_server() {
     # existing HDD with data, everything should be setup correctly.
     local newgroup=dlnausers
     sudo groupadd $newgroup
-    sudo adduser $USER $newgroup
+    sudo adduser "$USER" $newgroup
     sudo adduser minidlna $newgroup
 
     # Add configuration lines to corresponding files
@@ -64,7 +64,7 @@ function register_custom_systemd_service() {
 }
 
 function setup_file_permissions() {
-    sudo chown $USER:dlnausers -R "$mountdir"
+    sudo chown "$USER":dlnausers -R "$mountdir"
     sudo chmod 775 "$mountdir"
 }
 
