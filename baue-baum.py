@@ -59,7 +59,7 @@ def get_folder_list(cwd: str) -> list[str]:
     return folder_list
 
 
-def get_ratios(costs):
+def get_ratios(costs: Iterable[float]) -> list[float]:
     """
     Transform costs to ratios
 
