@@ -3,14 +3,15 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
+from pathlib import Path
 from typing import Iterable, List, Mapping, Tuple
 
-FOLDER_LIST_T = List[str]
+FOLDER_LIST_T = List[Path]
 SPLIT_POS_T = Tuple[int, ...]
 WEIGHT_TUPLE_T = Tuple[float, ...]
 CACHE_T = dict[WEIGHT_TUPLE_T, float]
 SPLIT_POS_MAPPING_T = dict[WEIGHT_TUPLE_T, Tuple[int, ...]]
+WEIGHT_MAPPING_T = Mapping[Path, float]
 
 
 class IllegalArgumentException(Exception):
@@ -52,7 +53,7 @@ def get_access_cost(max_branching_factor: int, access_type: str) -> Iterable[flo
         )
 
 
-def get_folder_list(cwd: str) -> FOLDER_LIST_T:
+def get_folder_list(cwd: Path) -> FOLDER_LIST_T:
     """
     Glob folder and sort content alphabetically
 
@@ -60,7 +61,7 @@ def get_folder_list(cwd: str) -> FOLDER_LIST_T:
     German rules.
     """
     tr_dict = str.maketrans("ÄÖÜäöü", "AOUaou")
-    folder_list = sorted(os.listdir(cwd), key=lambda s: s.translate(tr_dict).lower())
+    folder_list = sorted(cwd.iterdir(), key=lambda s: str(s).translate(tr_dict).lower())
     return folder_list
 
 
@@ -110,7 +111,7 @@ def iter_nsplits(
 
 
 def move_folders(
-    cwd: str, move_instructions: list[list], len_of_shortcut: int
+    cwd: Path, move_instructions: list[FOLDER_LIST_T], len_of_shortcut: int
 ) -> FOLDER_LIST_T:
     """
     Moves multiple elements into same subfolder
@@ -123,7 +124,7 @@ def move_folders(
 
     Receives
     --------
-    cwd: str
+    cwd: Path
         The current working directory. While not really the cwd, this function
         behaves as it were.
     move_instructions: list of containers.
@@ -144,26 +145,26 @@ def move_folders(
 
     ret_list = []
     for cur_set in move_instructions:
-        assert isinstance(cur_set, list)
         assert len(cur_set) > 1
         branch_name = "{first_folder}-{last_folder}".format(
-            first_folder=cur_set[0][:len_of_shortcut],
-            last_folder=cur_set[-1][:len_of_shortcut],
+            first_folder=str(cur_set[0])[:len_of_shortcut],
+            last_folder=str(cur_set[-1])[:len_of_shortcut],
         )
-        full_branch_name = os.path.join(cwd, branch_name)
-        os.mkdir(full_branch_name)
+        new_parent_dir = cwd / branch_name
+        new_parent_dir.mkdir()
         for elem in cur_set:
-            full_path = os.path.join(cwd, elem)
-            shutil.move(full_path, full_branch_name)
-        ret_list.append(full_branch_name)
+            old = cwd / elem
+            new = new_parent_dir / elem
+            old.rename(new)
+        ret_list.append(new_parent_dir)
 
     return ret_list
 
 
 def move_recursively(
-    cwd: str,
+    cwd: Path,
     folder_list: FOLDER_LIST_T,
-    weight_dict: Mapping[str, float],
+    weight_dict: WEIGHT_MAPPING_T,
     split_positions: SPLIT_POS_MAPPING_T,
 ) -> None:
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
@@ -187,7 +188,7 @@ def move_recursively(
         cwd=cwd, move_instructions=move_instructions, len_of_shortcut=10
     )
     for subf, flist in zip(subfolders, move_instructions):
-        new_cwd = os.path.join(cwd, subf)
+        new_cwd = cwd / subf
         move_recursively(
             cwd=new_cwd,
             folder_list=flist,
@@ -198,7 +199,7 @@ def move_recursively(
 
 def bruteforce_worker(
     folder_list: FOLDER_LIST_T,
-    weight_dict: Mapping[str, float],
+    weight_dict: WEIGHT_MAPPING_T,
     cache: CACHE_T,
     split_positions: SPLIT_POS_MAPPING_T,
     max_branching_factor: int,
@@ -257,9 +258,9 @@ def bruteforce_worker(
 
 
 def bruteforce(
-    cwd: str,
+    cwd: Path,
     folder_list: FOLDER_LIST_T,
-    weight_dict: Mapping[str, float],
+    weight_dict: WEIGHT_MAPPING_T,
     max_branching_factor: int,
     access_type: str,
 ) -> SPLIT_POS_MAPPING_T:
@@ -363,9 +364,9 @@ def get_ratio_splitpositions(
 
 
 def ratio_based_tree(
-    cwd: str,
+    cwd: Path,
     folder_list: FOLDER_LIST_T,
-    weight_dict: Mapping[str, float],
+    weight_dict: WEIGHT_MAPPING_T,
     access_type: str,
     max_branching_factor: int,
     split_positions: SPLIT_POS_MAPPING_T,
@@ -422,7 +423,7 @@ def ratio_based_tree(
 
 
 def main() -> None:
-    cwd = os.getcwd()
+    cwd = Path.cwd()
     folder_list = get_folder_list(cwd=cwd)
 
     # Import custom weights and apply them to the weight_dict.
