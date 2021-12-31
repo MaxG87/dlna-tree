@@ -7,6 +7,16 @@ function user_from_dir() {
     stat -c %u "$dir"
 }
 
+function get_n_random_music_folders() {
+    local num_rand_dir="$1"
+    local ignorelist='Hörbücher|Kinder-|Känguru'
+    find "$liste_dir" -iregex '.*\(ogg\|mp3\|flac\|wma\)' -exec dirname {} + |
+    grep -vE "$ignorelist" |
+    sort -u |
+    shuf -n"$num_rand_dir"
+
+}
+
 #Konstanten definieren
 dlna_dir=/media/Daten/DLNA
 baum_dir=$dlna_dir/00_Baum
@@ -36,16 +46,13 @@ done
 num_rand_screens=2
 num_screen_items=4
 num_rand_dir=$((num_screen_items * num_rand_screens - 2)) # Baum und Liste abziehen
-readarray shuf_arr<<<"$(
-    find "$liste_dir" -iregex '.*\(ogg\|mp3\|flac\|wma\)' -exec dirname {} + |
-    grep -vE 'Hörbücher|Kinder-|Känguru' |
-    sort -u |
-    shuf -n$num_rand_dir
+readarray -t random_music_selection<<<"$(
+    get_n_random_music_folders "$num_rand_dir"
 )"
 for ((it=0; it<num_rand_dir; it++))
 do
   pre_number=$(printf "%02d" $((it + 2)))
-  cur_dir="${shuf_arr[$it]}"
+  cur_dir="${random_music_selection[$it]}"
   album_name="$(basename "$cur_dir")"
   if echo "$album_name" | grep -qxiE '(CD)?[ _]?[0-9]+'
   then
