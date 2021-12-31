@@ -454,7 +454,7 @@ def main() -> None:
         cwd=cwd,
         folder_list=folder_list,
         max_branching_factor=max_branching_factor,
-        split_positions={},
+        split_positions=split_positions,
         weight_dict=weight_dict,
     )
     move_recursively(
