@@ -9,7 +9,6 @@ function user_from_dir() {
 
 #Konstanten definieren
 dlna_dir=/media/Daten/DLNA
-dlna_cache=/media/Daten/dlna_cache
 baum_dir=$dlna_dir/00_Baum
 liste_dir=$dlna_dir/01_Liste
 musik_dir=/media/Daten/Musik
