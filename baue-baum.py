@@ -147,8 +147,8 @@ def move_folders(
     for cur_set in move_instructions:
         assert len(cur_set) > 1
         branch_name = "{first_folder}-{last_folder}".format(
-            first_folder=str(cur_set[0])[:len_of_shortcut],
-            last_folder=str(cur_set[-1])[:len_of_shortcut],
+            first_folder=str(cur_set[0].name)[:len_of_shortcut],
+            last_folder=str(cur_set[-1].name)[:len_of_shortcut],
         )
         new_parent_dir = cwd / branch_name
         new_parent_dir.mkdir()
