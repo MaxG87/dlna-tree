@@ -325,7 +325,7 @@ def get_ratio_splitpositions(
         split_positions directly in Python ranges.
     """
 
-    split_positions: SPLIT_POS_T = ()
+    split_positions: list[int] = []
 
     base_ind = 0
     rescale_ratio = 1.0
@@ -374,9 +374,9 @@ def get_ratio_splitpositions(
             # Instead of fixing this issue, improvements of the bruteforce
             # solution seem to be more desirable.
             break
-        split_positions += (cur_split_pos,)
+        split_positions.append(cur_split_pos)
 
-    return split_positions
+    return tuple(split_positions)
 
 
 def ratio_based_tree(
