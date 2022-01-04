@@ -59,9 +59,7 @@ def get_access_cost(
     elif access_type == AccessType.CONSTANT:
         return [1] * max_branching_factor
     else:
-        raise IllegalArgumentException(
-            "access_type `{access_type}' not defined".format(access_type=access_type)
-        )
+        raise IllegalArgumentException(f"access_type `{access_type}' not defined")
 
 
 def get_folder_list(cwd: Path) -> FOLDER_LIST_T:
