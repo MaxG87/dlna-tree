@@ -32,6 +32,9 @@ Die obigen Bedingungen sind erfüllt durch:
 
 
 ==== Detailprobleme ====
+
+Alle bekannten Detailprobleme sind von Tests abgedeckt.
+
 Bei der Frage, wie viele Ordner noch in einen Teilbaum kommen, darf nicht
 gierig aufgerundet werden. Dies wird deutlich an folgendem Beispiel:
   Sei [ε, ε, w, ε, ε] eine Liste von Gewichten. Sei c_1 = … = c_4 = 1. Dann
@@ -47,12 +50,16 @@ Das obige Beispiel zeigt ein weiteres Problem auf. Momentan würde aus
 ist. Diesem Problem wird dadurch begegnet, dass die α_i reskaliert werden und
 sich immer auf die noch verbleibenden Elemente beziehen.
 
-Seien die Gewichte w = [ε, ε …, ε, w] und die Kosten c = [1, x, …, 1]. Dann
+Seien die Gewichte w = [ε, ε …, ε, w] und die Kosten c = [1, 1, …, 1]. Dann
 wäre die optimale Aufteilung [[ε, …], …, w]. Allerdings würde dies nicht
 erreicht, wenn jeder Teilbaum gierig gefüllt würde. Dann ergäbe sich nämlich
 [[ε, …], w]. Dies ist offensichtlich schlechter, da die Zugriffe auf die
 ε-Elemente teurer werden, die für das w-Element sich jedoch nicht verändern.
 
+Auch der Fall mit sieben gleichgewichteten Elementen wird momentan nicht
+korrekt gelöst. Seien die Gewichte [1, 1, 1, 1, 1, 1, 1] und die Kosten
+[1, 2, 3, 2]. Dann wäre die optimale Aufteilung [[1, 1, 1, 1], 1, 1, 1], aber
+der Algorithmus konstruiert [[1, 1, 1], [1, 1], 1, 1].
 
 ===== Lösungsversuch 2 =====
 
