@@ -122,26 +122,67 @@ def get_ratios(costs: Iterable[float]) -> list[float]:
     return ratios
 
 
-def split_to_lists(inlist: FOLDER_LIST_T, insplit: SPLIT_POS_T) -> list[FOLDER_LIST_T]:
+def split_to_lists(inlist: tuple[T, ...], insplit: SPLIT_POS_T) -> list[tuple[T, ...]]:
     split = (0,) + insplit + (len(inlist),)
     ret = [inlist[start:end] for start, end in zip(split[:-1], split[1:])]
     return ret
 
 
-def iter_nsplits(
-    num_elems: int, num_splits: int, start_idx: int = 1, start_tuple: SPLIT_POS_T = ()
-) -> Iterable[SPLIT_POS_T]:
-    if num_splits == 0:
-        yield start_tuple
-        return
-    for split_pos in range(start_idx, num_elems - num_splits + 1):
-        new_tuple = start_tuple + (split_pos,)
-        yield from iter_nsplits(
-            num_elems=num_elems,
-            num_splits=num_splits - 1,
-            start_idx=split_pos + 1,
-            start_tuple=new_tuple,
-        )
+def iter_nsplits(nof_elems: int, num_splits: int) -> Iterable[SPLIT_POS_T]:
+    """Yield all possible splits
+
+    This function will generate all possible splits for the given number of
+    elements and split positions.
+
+    Parameters
+    ----------
+    nof_elems
+        Number of elements that need to be splitted.
+
+    num_splits
+        Number of required splits. Typically the branching factor.
+
+    Returns
+    -------
+    Iterable[SPLIT_POS_T]
+        Lazy stream of all possible split positions
+
+    Example:
+    --------
+    >>> all_splits = iter_nsplits(4,2)
+    >>> next(all_splits)
+    (1, 2)
+    >>> next(all_splits)
+    (1, 3)
+    >>> next(all_splits)
+    (2, 3)
+    >>> next(all_splits)
+    Traceback (most recent call last):
+        ...
+    StopIteration
+    """
+
+    def iter_nsplits_worker(
+        nof_elems: int,
+        num_splits: int,
+        start_idx: int,
+        start_tuple: SPLIT_POS_T,
+    ):
+        if num_splits == 0:
+            yield start_tuple
+            return
+        for split_pos in range(start_idx, nof_elems - num_splits + 1):
+            new_tuple = start_tuple + (split_pos,)
+            yield from iter_nsplits_worker(
+                nof_elems=nof_elems,
+                num_splits=num_splits - 1,
+                start_idx=split_pos + 1,
+                start_tuple=new_tuple,
+            )
+
+    yield from iter_nsplits_worker(
+        nof_elems=nof_elems, num_splits=num_splits, start_idx=1, start_tuple=()
+    )
 
 
 def move_folders(
