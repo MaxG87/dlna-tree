@@ -25,9 +25,7 @@ class IllegalArgumentException(Exception):
     pass
 
 
-def get_access_cost(
-    max_branching_factor: int, access_type: AccessType
-) -> Iterable[float]:
+def access_costs(max_branching_factor: int, access_type: AccessType) -> Iterable[float]:
     """
     Returns list of access costs
 
@@ -249,7 +247,7 @@ def bruteforce_worker(
         # abort recursion
         return sum_of_weights, cache[weight_tuple]
     if num_elems <= max_branching_factor:
-        costs = get_access_cost(max_branching_factor=num_elems, access_type=access_type)
+        costs = access_costs(max_branching_factor=num_elems, access_type=access_type)
         # Subfolders which would hold only a single element will not be
         # created, as the element can be used directly. Therefore they do not
         # have inner costs. Their access costs are considered on recursion
@@ -263,7 +261,7 @@ def bruteforce_worker(
 
     best_split: SPLIT_POS_T = ()
     best_split_cost = float(0xCAFFEBABE)
-    costs = get_access_cost(
+    costs = access_costs(
         max_branching_factor=max_branching_factor, access_type=access_type
     )
     for cur_split in iter_nsplits(
@@ -431,7 +429,7 @@ def ratio_based_tree(
     if weight_tuple in cache:
         return
     if num_elems <= max_branching_factor:
-        costs = get_access_cost(max_branching_factor=num_elems, access_type=access_type)
+        costs = access_costs(max_branching_factor=num_elems, access_type=access_type)
         # Subfolders which would hold only a single element will not be
         # created, as the element can be used directly. Therefore they do not
         # have inner costs. Their access costs are considered one recursion
@@ -443,7 +441,7 @@ def ratio_based_tree(
         split_positions[weight_tuple] = ()
         return
 
-    costs = get_access_cost(
+    costs = access_costs(
         max_branching_factor=max_branching_factor, access_type=access_type
     )
     ratios = get_ratios(costs)
