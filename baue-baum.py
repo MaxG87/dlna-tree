@@ -7,12 +7,12 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Iterable, List, Mapping, Tuple
 
-FOLDER_LIST_T = List[Path]
+FOLDER_LIST_T = List[str]
 SPLIT_POS_T = Tuple[int, ...]
 WEIGHT_TUPLE_T = Tuple[float, ...]
 CACHE_T = dict[WEIGHT_TUPLE_T, float]
 SPLIT_POS_MAPPING_T = dict[WEIGHT_TUPLE_T, Tuple[int, ...]]
-WEIGHT_MAPPING_T = Mapping[Path, float]
+WEIGHT_MAPPING_T = Mapping[str, float]
 
 
 class AccessType(Enum):
@@ -64,7 +64,18 @@ def get_access_cost(
 
 def get_folder_list(cwd: Path) -> FOLDER_LIST_T:
     """
-    Glob folder and sort content alphabetically
+    Return entries of folder sorted alphabetically
+
+    This function returns the name of the entries of a given folder sorted
+    according to German rules (i.e. Umlauts are treated as their vocal
+    correspondents).
+
+    The function MUST NOT return absolute paths. The program uses a lookup
+    table to get the costs of each element and needs to relocate the entries
+    frequently when constructing the access tree. If the returned entries were
+    of type `Path` one had to make sure to use `entry.name` whenever the
+    elements are used. Thats even more error prone than handling file system
+    entries as `str`.
 
     The sorting treats umlauts as their non-umlaut counterparts, according to
     German rules.
@@ -77,10 +88,11 @@ def get_folder_list(cwd: Path) -> FOLDER_LIST_T:
     Returns
     -------
     FOLDER_LIST_T
-        sorted list of elements in CWD
+        sorted list of names of elements in CWD
     """
     tr_dict = str.maketrans("ÄÖÜäöü", "AOUaou")
-    folder_list = sorted(cwd.iterdir(), key=lambda s: str(s).translate(tr_dict).lower())
+    entries = (entry.name for entry in cwd.iterdir())
+    folder_list = sorted(entries, key=lambda s: str(s).translate(tr_dict).lower())
     return folder_list
 
 
@@ -106,7 +118,8 @@ def get_ratios(costs: Iterable[float]) -> list[float]:
     """
 
     ratios_unnormed = [1 / c for c in costs]
-    ratios = [r / sum(ratios_unnormed) for r in ratios_unnormed]
+    sum_ = sum(ratios_unnormed)
+    ratios = [r / sum_ for r in ratios_unnormed]
     assert abs(sum(ratios) - 1) < 1e-6
     return ratios
 
@@ -135,7 +148,7 @@ def iter_nsplits(
 
 def move_folders(
     cwd: Path, move_instructions: list[FOLDER_LIST_T], len_of_shortcut: int
-) -> FOLDER_LIST_T:
+) -> list[Path]:
     """
     Moves multiple elements into same subfolder
 
@@ -162,7 +175,7 @@ def move_folders(
 
     Returns
     -------
-    list[str]
+    list[Path]
         list of created subfolders
     """
 
@@ -170,8 +183,8 @@ def move_folders(
     for cur_set in move_instructions:
         assert len(cur_set) > 1
         branch_name = "{first_folder}-{last_folder}".format(
-            first_folder=str(cur_set[0].name)[:len_of_shortcut],
-            last_folder=str(cur_set[-1].name)[:len_of_shortcut],
+            first_folder=str(cur_set[0])[:len_of_shortcut],
+            last_folder=str(cur_set[-1])[:len_of_shortcut],
         )
         new_parent_dir = cwd / branch_name
         new_parent_dir.mkdir()
@@ -355,17 +368,17 @@ def get_ratio_splitpositions(
         cur_ratio /= rescale_ratio
         rescale_ratio *= 1 - cur_ratio
 
-        is_greater = list(map(lambda w: w >= cur_ratio, cumratio_weights))
-        ind_candidate = is_greater.index(True)
-        if ind_candidate == 0:
-            cur_split_pos = ind_candidate + 1
+        is_greater = [w >= cur_ratio for w in cumratio_weights]
+        candidate_idx = is_greater.index(True)
+        if candidate_idx == 0:
+            cur_split_pos = candidate_idx + 1
         elif (
-            cur_ratio - cumratio_weights[ind_candidate - 1]
-            < cumratio_weights[ind_candidate] - cur_ratio
+            cur_ratio - cumratio_weights[candidate_idx - 1]
+            < cumratio_weights[candidate_idx] - cur_ratio
         ):
-            cur_split_pos = ind_candidate
+            cur_split_pos = candidate_idx
         else:
-            cur_split_pos = ind_candidate + 1
+            cur_split_pos = candidate_idx + 1
         new_base_ind = base_ind + cur_split_pos
         cur_split_pos += base_ind
         base_ind = new_base_ind
