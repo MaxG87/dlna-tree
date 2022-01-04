@@ -40,7 +40,7 @@ def get_access_cost(
     max_branching_factor
         How many subelements are there.
     access_type
-        Specifies the costs for each element. Possible values are:
+        Specifies the cost structure. Possible values are:
             linear: linear, i.e. one "cost" to traverse one element
             wrappable: linear, but with connection between first and last elem
             constant: 1 for each element
