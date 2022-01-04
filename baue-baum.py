@@ -26,18 +26,20 @@ def get_access_cost(max_branching_factor: int, access_type: str) -> Iterable[flo
     directory. It does not consider traversing a tree, only selecting elements
     on the same tree level.
 
-    Parameter
-    ---------
-    max_branching_factor: How many subelements are there.
-    access_type: Specifies the costs for each element. Possible values are:
+    Parameters
+    ----------
+    max_branching_factor
+        How many subelements are there.
+    access_type
+        Specifies the costs for each element. Possible values are:
             linear: linear, i.e. one "cost" to traverse one element
             wrappable: linear, but with connection between first and last elem
             constant: 1 for each element
 
     Returns
     -------
-    costs: iterable of floats, each stating the cost to choose the
-           corresponding element
+    Iterable[float]
+        each stating the cost to choose the corresponding element
     """
     if access_type == "wrappable":
         return [1] + [
@@ -59,6 +61,16 @@ def get_folder_list(cwd: Path) -> FOLDER_LIST_T:
 
     The sorting treats umlauts as their non-umlaut counterparts, according to
     German rules.
+
+    Parameters
+    ----------
+    cwd
+        Path to get sorted element list from
+
+    Returns
+    -------
+    FOLDER_LIST_T
+        sorted list of elements in CWD
     """
     tr_dict = str.maketrans("ÄÖÜäöü", "AOUaou")
     folder_list = sorted(cwd.iterdir(), key=lambda s: str(s).translate(tr_dict).lower())
@@ -80,6 +92,10 @@ def get_ratios(costs: Iterable[float]) -> list[float]:
 
     Thus, this is the most condensed form of the design rationale of the ratio
     based tree construction approach.
+
+    Side Effects
+    ------------
+    Will consume `costs`. If it is a generator, it will be exhausted.
     """
 
     ratios_unnormed = [1 / c for c in costs]
@@ -122,16 +138,16 @@ def move_folders(
 
     No subdirectory is created for lone elements.
 
-    Receives
-    --------
-    cwd: Path
+    Parameters
+    ----------
+    cwd
         The current working directory. While not really the cwd, this function
         behaves as it were.
-    move_instructions: list of containers.
+    move_instructions
         Elements of each container are moved to a common subfolder. The
         elements must be in cwd! It must hold len(c) > 1 for each c in
         move_instructions.
-    len_of_shortcut: int
+    len_of_shortcut
         The name of the common subfolder is determined by the names of the
         first and last element of the current container in move_instructions.
         From these elements, the first len_of_shortcut characters are taken to
@@ -139,7 +155,7 @@ def move_folders(
 
     Returns
     -------
-    ret_list: list of str
+    list[str]
         list of created subfolders
     """
 
@@ -294,16 +310,16 @@ def get_ratio_splitpositions(
 
     Parameters
     ----------
-    weight_tuple:
+    weight_tuple
         A tuple containing the weight for each element to consider.
-    ratios:
+    ratios
         The ratio of elements weights to be stored in each subfolder.
 
     Returns
     -------
-    split_positions:
-        A tuple of n-1 doubles, with n == len(ratios). The elements of
-        split_positions specify the first items (each corresponding to an
+    SPLIT_POS_T
+        A tuple of n-1 integers, with n == len(ratios). The elements of the
+        returned tuple specify the first items (each corresponding to an
         element of weight_tuple) not to be included in the subfolders that are
         about to be created. This way, one can use the elements of
         split_positions directly in Python ranges.
@@ -373,12 +389,20 @@ def ratio_based_tree(
     cache: CACHE_T,
 ) -> None:
     """
-    Returns:
-    --------
-    The important calculations are stored in split_positions.
+    Create access tree based on weight ratios
 
-    Side Effects:
-    -------------
+    This function recreates the access tree such that the more weight will be
+    put into a subtree the smaller its access cost are. This concept is
+    explained in detail in `get_ratio_splitpositions` and the file
+    Designnotizen.
+
+    Returns
+    -------
+    None
+        The important calculations are stored in split_positions.
+
+    Side Effects
+    ------------
     The input variables cache and split_positions are manipulated.
     """
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)

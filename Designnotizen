@@ -1,14 +1,14 @@
 Eigentlich gesucht ist ein Baum, der nur Werte auf den Blättern hat und die
-durchschnittliche Zugriffszeit minimiert. Hierbei ist eigentlich auch egal,
+durchschnittlichen Zugriffskosten minimiert. Hierbei ist eigentlich auch egal,
 welchen Verzweigungsfaktor der Baum hat, solange er eben nur die
-durchschnittliche Zugriffszeit minimiert. Leider ist momentan noch nicht klar,
-wie dies formuliert werden kann. Deswegen werden mehrere Lösungsvorschläge
-formuliert, die unterschiedliche Stärken und Schwächen haben.
+durchschnittlichen Zugriffskosten minimiert. Leider ist momentan noch nicht
+klar, wie dies formuliert werden kann. Deswegen werden mehrere
+Lösungsvorschläge formuliert, die unterschiedliche Stärken und Schwächen haben.
 
 
 ===== Lösungsversuch 1 =====
 
-In diesem Lösungsversuch wird nicht direkt versucht, die Zugriffszeiten zu
+In diesem Lösungsversuch wird nicht direkt versucht, die Zugriffskosten zu
 minimieren. Stattdessen wird ein einfacheres Platzhalterproblem gelöst, in der
 Hoffnung, damit der Lösung näher zu kommen. Im Allgemeinen ist die so erzielte
 Lösung jedoch nicht optimal.
