@@ -54,7 +54,7 @@ def access_costs(max_branching_factor: int, access_type: AccessType) -> Iterable
         ]
     elif access_type == AccessType.LINEAR:
         return range(1, max_branching_factor + 1)
-    elif access_type == AccessType.CONSTANT:
+    elif access_type == AccessType.CONSTANT:  # noqa: SIM106
         return [1] * max_branching_factor
     else:
         raise IllegalArgumentException(f"access_type `{access_type}' not defined")
