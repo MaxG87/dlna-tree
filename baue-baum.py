@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+from enum import Enum, auto
 from pathlib import Path
 from typing import Iterable, List, Mapping, Tuple
 
@@ -14,11 +15,19 @@ SPLIT_POS_MAPPING_T = dict[WEIGHT_TUPLE_T, Tuple[int, ...]]
 WEIGHT_MAPPING_T = Mapping[Path, float]
 
 
+class AccessType(Enum):
+    WRAPPABLE = auto()
+    LINEAR = auto()
+    CONSTANT = auto()
+
+
 class IllegalArgumentException(Exception):
     pass
 
 
-def get_access_cost(max_branching_factor: int, access_type: str) -> Iterable[float]:
+def get_access_cost(
+    max_branching_factor: int, access_type: AccessType
+) -> Iterable[float]:
     """
     Returns list of access costs
 
@@ -41,13 +50,13 @@ def get_access_cost(max_branching_factor: int, access_type: str) -> Iterable[flo
     Iterable[float]
         each stating the cost to choose the corresponding element
     """
-    if access_type == "wrappable":
+    if access_type == AccessType.WRAPPABLE:
         return [1] + [
             min(n, max_branching_factor - n) + 1 for n in range(1, max_branching_factor)
         ]
-    elif access_type == "linear":
+    elif access_type == AccessType.LINEAR:
         return range(1, max_branching_factor + 1)
-    elif access_type == "constant":
+    elif access_type == AccessType.CONSTANT:
         return [1] * max_branching_factor
     else:
         raise IllegalArgumentException(
@@ -219,7 +228,7 @@ def bruteforce_worker(
     cache: CACHE_T,
     split_positions: SPLIT_POS_MAPPING_T,
     max_branching_factor: int,
-    access_type: str,
+    access_type: AccessType,
 ) -> tuple[float, float]:
     num_elems = len(folder_list)
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
@@ -278,7 +287,7 @@ def bruteforce(
     folder_list: FOLDER_LIST_T,
     weight_dict: WEIGHT_MAPPING_T,
     max_branching_factor: int,
-    access_type: str,
+    access_type: AccessType,
 ) -> SPLIT_POS_MAPPING_T:
     cache: CACHE_T = {}
     split_positions: SPLIT_POS_MAPPING_T = {}
@@ -383,7 +392,7 @@ def ratio_based_tree(
     cwd: Path,
     folder_list: FOLDER_LIST_T,
     weight_dict: WEIGHT_MAPPING_T,
-    access_type: str,
+    access_type: AccessType,
     max_branching_factor: int,
     split_positions: SPLIT_POS_MAPPING_T,
     cache: CACHE_T,
@@ -463,7 +472,7 @@ def main() -> None:
     weight_dict.update(custom_weights)
 
     max_branching_factor = 4
-    access_type = "wrappable"
+    access_type = AccessType.WRAPPABLE
     # split_positions = bruteforce(
     #     cwd=cwd,
     #     folder_list=folder_list,
