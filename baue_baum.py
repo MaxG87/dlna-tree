@@ -449,13 +449,14 @@ def get_ratio_splitpositions(
 
 
 def ratio_based_tree(
+    access_type: AccessType,
+    bruteforce_threshold: int,
+    costs_cache: CACHE_T,
     cwd: Path,
     folder_list: FOLDER_LIST_T,
-    weight_dict: WEIGHT_MAPPING_T,
-    access_type: AccessType,
     max_branching_factor: int,
     split_positions: SPLIT_POS_MAPPING_T,
-    cache: CACHE_T,
+    weight_dict: WEIGHT_MAPPING_T,
 ) -> None:
     """
     Create access tree based on weight ratios
@@ -477,8 +478,19 @@ def ratio_based_tree(
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
     num_elems = len(folder_list)
 
-    if weight_tuple in cache:
+    if weight_tuple in costs_cache:
         return
+
+    if len(weight_tuple) < bruteforce_threshold:
+        bruteforce_worker(
+            access_type=access_type,
+            costs_cache=costs_cache,
+            elements=weight_tuple,
+            max_branching_factor=max_branching_factor,
+            split_positions=split_positions,
+        )
+        return
+
     if num_elems <= max_branching_factor:
         costs = access_costs(max_branching_factor=num_elems, access_type=access_type)
         # Subfolders which would hold only a single element will not be
@@ -488,7 +500,7 @@ def ratio_based_tree(
         total_costs = (
             0.0 if num_elems == 1 else sum(c * w for c, w in zip(costs, weight_tuple))
         )
-        cache[weight_tuple] = total_costs
+        costs_cache[weight_tuple] = total_costs
         split_positions[weight_tuple] = ()
         return
 
@@ -505,13 +517,14 @@ def ratio_based_tree(
     range_tuple = (0,) + cur_split_positions + (num_elems,)
     for begin, end in zip(range_tuple[:-1], range_tuple[1:]):
         ratio_based_tree(
+            access_type=access_type,
+            bruteforce_threshold=bruteforce_threshold,
+            costs_cache=costs_cache,
             cwd=cwd,
             folder_list=folder_list[begin:end],
-            weight_dict=weight_dict,
-            cache=cache,
-            split_positions=split_positions,
             max_branching_factor=max_branching_factor,
-            access_type=access_type,
+            split_positions=split_positions,
+            weight_dict=weight_dict,
         )
 
 
@@ -536,7 +549,8 @@ def main() -> None:
     split_positions: SPLIT_POS_MAPPING_T = {}
     ratio_based_tree(
         access_type=access_type,
-        cache={},
+        bruteforce_threshold=10,
+        costs_cache={},
         cwd=cwd,
         folder_list=folder_list,
         max_branching_factor=max_branching_factor,
