@@ -3,50 +3,13 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from baue_baum import AccessType, access_costs, get_ratio_splitpositions, get_ratios
+from tests import hypothesis_utils as hu
 
 MAX_BRANCHING_FACTOR = 128
 MAX_ELEM_LIST_LEN = 256
 
 
-@st.composite
-def access_types(draw) -> AccessType:
-    ret: AccessType = draw(st.sampled_from(list(AccessType)))
-    return ret
-
-
-@st.composite
-def branching_factors(
-    draw, min_value: int = 2, max_value: int = MAX_BRANCHING_FACTOR
-) -> int:
-    factor: int = draw(st.integers(min_value=min_value, max_value=max_value))
-    return factor
-
-
-@st.composite
-def equal_weight_elements(
-    draw, value: float = 1.0, min_size: int = 1
-) -> tuple[float, ...]:
-    elements: list[float] = draw(
-        st.lists(st.just(value), min_size=min_size, max_size=MAX_ELEM_LIST_LEN)
-    )
-    return tuple(elements)
-
-
-@st.composite
-def weights(draw) -> float:
-    sane_max_value = 100_000  # usual range is [1, 20]
-    value: float = draw(
-        st.floats(
-            min_value=1.0,
-            max_value=sane_max_value,
-            allow_nan=False,
-            allow_infinity=False,
-        )
-    )
-    return value
-
-
-@given(access_type=access_types(), branching_factor=branching_factors())
+@given(access_type=hu.access_types(), branching_factor=hu.branching_factors())
 def test_access_costs_return_length(
     access_type: AccessType, branching_factor: int
 ) -> None:
@@ -56,7 +19,9 @@ def test_access_costs_return_length(
 
 
 @given(
-    access_type=access_types(), branching_factor=branching_factors(), value=weights()
+    access_type=hu.access_types(),
+    branching_factor=hu.branching_factors(),
+    value=hu.weights(),
 )
 def test_single_element_is_not_splitted(
     access_type: AccessType, branching_factor: int, value: float
@@ -66,20 +31,6 @@ def test_single_element_is_not_splitted(
     ratios = get_ratios(costs)
     split_positions = get_ratio_splitpositions(elements, ratios)
     assert split_positions == ()
-
-
-@given(elements=equal_weight_elements(min_size=2), branching_factor=branching_factors())
-def test_constant_costs_make_balanced_tree(
-    elements: tuple[float, ...], branching_factor: int
-) -> None:
-    access_type = AccessType.CONSTANT
-    costs = access_costs(branching_factor, access_type)
-    ratios = get_ratios(costs)
-    split_positions = get_ratio_splitpositions(elements, ratios)
-
-    distances = {v1 - v2 for (v1, v2) in zip(split_positions[1:], split_positions)}
-    distances.add(split_positions[0])
-    assert len(distances) <= 2
 
 
 @pytest.mark.parametrize("access_type", AccessType)
@@ -113,7 +64,7 @@ def test_splits_before_and_past_huge_elem(access_type: AccessType) -> None:
 
 @pytest.mark.xfail(reason="Known to be handled suboptimal!")
 @given(
-    access_type=access_types(),
+    access_type=hu.access_types(),
     elements=st.lists(st.just(1.0), min_size=1).map(tuple),
 )
 def test_branching_factor_is_exhausted(
@@ -208,9 +159,9 @@ def test_wrappable_splits_many_elems_correcty() -> None:
 
 
 @given(
-    access_type=access_types(),
-    elements=st.lists(weights(), min_size=1),
-    branching_factor=branching_factors(),
+    access_type=hu.access_types(),
+    elements=st.lists(hu.weights(), min_size=1),
+    branching_factor=hu.branching_factors(),
 )
 def test_ratio_splitpositions_does_not_crash(
     access_type: AccessType, elements: list[float], branching_factor: int

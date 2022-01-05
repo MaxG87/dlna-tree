@@ -3,9 +3,10 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import Iterable, List, Mapping, Tuple
+from typing import Iterable, List, Mapping, Tuple, TypeVar
 
 FOLDER_LIST_T = List[str]
 SPLIT_POS_T = Tuple[int, ...]
@@ -13,12 +14,19 @@ WEIGHT_TUPLE_T = Tuple[float, ...]
 CACHE_T = dict[WEIGHT_TUPLE_T, float]
 SPLIT_POS_MAPPING_T = dict[WEIGHT_TUPLE_T, Tuple[int, ...]]
 WEIGHT_MAPPING_T = Mapping[str, float]
+T = TypeVar("T")
 
 
 class AccessType(Enum):
     WRAPPABLE = auto()
     LINEAR = auto()
     CONSTANT = auto()
+
+
+@dataclass(frozen=True)
+class BruteForceResult:
+    costs: float
+    weight: float
 
 
 class IllegalArgumentException(Exception):
@@ -132,7 +140,8 @@ def iter_nsplits(nof_elems: int, num_splits: int) -> Iterable[SPLIT_POS_T]:
     """Yield all possible splits
 
     This function will generate all possible splits for the given number of
-    elements and split positions.
+    elements and split positions. Having nof_elems <= num_splits is illegal and
+    causes a ValueError to be raised.
 
     Parameters
     ----------
@@ -146,6 +155,11 @@ def iter_nsplits(nof_elems: int, num_splits: int) -> Iterable[SPLIT_POS_T]:
     -------
     Iterable[SPLIT_POS_T]
         Lazy stream of all possible split positions
+
+    Raises
+    ------
+    ValueError
+        If nof_elem <= num_splits
 
     Example:
     --------
@@ -179,6 +193,9 @@ def iter_nsplits(nof_elems: int, num_splits: int) -> Iterable[SPLIT_POS_T]:
                 start_idx=split_pos + 1,
                 start_tuple=new_tuple,
             )
+
+    if nof_elems <= num_splits:
+        raise ValueError
 
     yield from iter_nsplits_worker(
         nof_elems=nof_elems, num_splits=num_splits, start_idx=1, start_tuple=()
@@ -273,83 +290,76 @@ def move_recursively(
 
 
 def bruteforce_worker(
-    folder_list: FOLDER_LIST_T,
-    weight_dict: WEIGHT_MAPPING_T,
-    cache: CACHE_T,
-    split_positions: SPLIT_POS_MAPPING_T,
-    max_branching_factor: int,
     access_type: AccessType,
-) -> tuple[float, float]:
-    num_elems = len(folder_list)
-    weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
-    sum_of_weights = sum(weight_tuple)
+    costs_cache: CACHE_T,
+    elements: WEIGHT_TUPLE_T,
+    max_branching_factor: int,
+    split_positions: SPLIT_POS_MAPPING_T,
+) -> BruteForceResult:
+    nof_elems = len(elements)
+    total_weight = sum(elements)
 
-    if weight_tuple in cache:
+    if elements in costs_cache:
         # abort recursion
-        return sum_of_weights, cache[weight_tuple]
-    if num_elems <= max_branching_factor:
-        costs = access_costs(max_branching_factor=num_elems, access_type=access_type)
-        # Subfolders which would hold only a single element will not be
-        # created, as the element can be used directly. Therefore they do not
-        # have inner costs. Their access costs are considered on recursion
-        # level earlier.
-        total_costs = (
-            0.0 if num_elems == 1 else sum(c * w for (c, w) in zip(costs, weight_tuple))
-        )
-        cache[weight_tuple] = total_costs
-        split_positions[weight_tuple] = ()
-        return sum_of_weights, total_costs
+        return BruteForceResult(costs_cache[elements], total_weight)
 
     best_split: SPLIT_POS_T = ()
     best_split_cost = float(0xCAFFEBABE)
-    costs = access_costs(
-        max_branching_factor=max_branching_factor, access_type=access_type
-    )
-    for cur_split in iter_nsplits(
-        num_elems=num_elems, num_splits=max_branching_factor - 1
-    ):
-        cost_list = []
-        weight_list = []
-        for sublist in split_to_lists(inlist=folder_list, insplit=cur_split):
-            cur_weight, cur_cost = bruteforce_worker(
-                folder_list=sublist,
-                weight_dict=weight_dict,
-                cache=cache,
-                split_positions=split_positions,
-                max_branching_factor=max_branching_factor,
-                access_type=access_type,
+
+    max_num_splits = min(max_branching_factor - 1, nof_elems - 1)
+    for num_splits in range(1, max_num_splits + 1):
+        costs = list(
+            access_costs(max_branching_factor=num_splits + 1, access_type=access_type)
+        )
+        for cur_split in iter_nsplits(nof_elems=nof_elems, num_splits=num_splits):
+            subtree_results = []
+            for sublist in split_to_lists(inlist=elements, insplit=cur_split):
+                if len(sublist) == 1:
+                    # recursion ends here
+                    result = BruteForceResult(costs=0, weight=sublist[0])
+                else:
+                    result = bruteforce_worker(
+                        access_type=access_type,
+                        costs_cache=costs_cache,
+                        elements=sublist,
+                        split_positions=split_positions,
+                        max_branching_factor=max_branching_factor,
+                    )
+                subtree_results.append(result)
+
+            sum_of_subtree_costs = sum(
+                cur_result.costs for cur_result in subtree_results
             )
-            cost_list.append(cur_cost)
-            weight_list.append(cur_weight)
+            accumulated_costs_to_access_subtrees = sum(
+                access_cost * result.weight
+                for access_cost, result in zip(costs, subtree_results)
+            )
+            total_costs = sum_of_subtree_costs + accumulated_costs_to_access_subtrees
+            if total_costs < best_split_cost or (
+                total_costs == best_split_cost and len(cur_split) > len(best_split)
+            ):
+                best_split = cur_split
+                best_split_cost = total_costs
 
-        total_costs = sum(c * w for c, w in zip(costs, weight_list)) + sum(cost_list)
-        if total_costs < best_split_cost:
-            best_split = cur_split
-            best_split_cost = total_costs
-
-    cache[weight_tuple] = best_split_cost
-    split_positions[weight_tuple] = best_split
-    return sum_of_weights, best_split_cost
+    costs_cache[elements] = best_split_cost
+    split_positions[elements] = best_split
+    return BruteForceResult(best_split_cost, total_weight)
 
 
 def bruteforce(
-    cwd: Path,
-    folder_list: FOLDER_LIST_T,
-    weight_dict: WEIGHT_MAPPING_T,
+    elements: WEIGHT_TUPLE_T,
     max_branching_factor: int,
     access_type: AccessType,
-) -> SPLIT_POS_MAPPING_T:
-    cache: CACHE_T = {}
-    split_positions: SPLIT_POS_MAPPING_T = {}
-    _, total_costs = bruteforce_worker(
-        folder_list=folder_list,
-        weight_dict=weight_dict,
-        cache=cache,
-        split_positions=split_positions,
-        max_branching_factor=max_branching_factor,
+    split_positions: SPLIT_POS_MAPPING_T,
+) -> BruteForceResult:
+    costs_cache: CACHE_T = {}
+    return bruteforce_worker(
         access_type=access_type,
+        costs_cache=costs_cache,
+        elements=elements,
+        max_branching_factor=max_branching_factor,
+        split_positions=split_positions,
     )
-    return split_positions
 
 
 def get_ratio_splitpositions(
@@ -439,13 +449,14 @@ def get_ratio_splitpositions(
 
 
 def ratio_based_tree(
+    access_type: AccessType,
+    bruteforce_threshold: int,
+    costs_cache: CACHE_T,
     cwd: Path,
     folder_list: FOLDER_LIST_T,
-    weight_dict: WEIGHT_MAPPING_T,
-    access_type: AccessType,
     max_branching_factor: int,
     split_positions: SPLIT_POS_MAPPING_T,
-    cache: CACHE_T,
+    weight_dict: WEIGHT_MAPPING_T,
 ) -> None:
     """
     Create access tree based on weight ratios
@@ -467,8 +478,19 @@ def ratio_based_tree(
     weight_tuple = tuple(weight_dict[cur_fold] for cur_fold in folder_list)
     num_elems = len(folder_list)
 
-    if weight_tuple in cache:
+    if weight_tuple in costs_cache:
         return
+
+    if len(weight_tuple) < bruteforce_threshold:
+        bruteforce_worker(
+            access_type=access_type,
+            costs_cache=costs_cache,
+            elements=weight_tuple,
+            max_branching_factor=max_branching_factor,
+            split_positions=split_positions,
+        )
+        return
+
     if num_elems <= max_branching_factor:
         costs = access_costs(max_branching_factor=num_elems, access_type=access_type)
         # Subfolders which would hold only a single element will not be
@@ -478,7 +500,7 @@ def ratio_based_tree(
         total_costs = (
             0.0 if num_elems == 1 else sum(c * w for c, w in zip(costs, weight_tuple))
         )
-        cache[weight_tuple] = total_costs
+        costs_cache[weight_tuple] = total_costs
         split_positions[weight_tuple] = ()
         return
 
@@ -495,13 +517,14 @@ def ratio_based_tree(
     range_tuple = (0,) + cur_split_positions + (num_elems,)
     for begin, end in zip(range_tuple[:-1], range_tuple[1:]):
         ratio_based_tree(
+            access_type=access_type,
+            bruteforce_threshold=bruteforce_threshold,
+            costs_cache=costs_cache,
             cwd=cwd,
             folder_list=folder_list[begin:end],
-            weight_dict=weight_dict,
-            cache=cache,
-            split_positions=split_positions,
             max_branching_factor=max_branching_factor,
-            access_type=access_type,
+            split_positions=split_positions,
+            weight_dict=weight_dict,
         )
 
 
@@ -523,17 +546,11 @@ def main() -> None:
 
     max_branching_factor = 4
     access_type = AccessType.WRAPPABLE
-    # split_positions = bruteforce(
-    #     cwd=cwd,
-    #     folder_list=folder_list,
-    #     weight_dict=weight_dict,
-    #     max_branching_factor=max_branching_factor,
-    #     access_type=access_type,
-    # )
     split_positions: SPLIT_POS_MAPPING_T = {}
     ratio_based_tree(
         access_type=access_type,
-        cache={},
+        bruteforce_threshold=40,
+        costs_cache={},
         cwd=cwd,
         folder_list=folder_list,
         max_branching_factor=max_branching_factor,
