@@ -5,7 +5,7 @@ import json
 import os
 from enum import Enum, auto
 from pathlib import Path
-from typing import Iterable, List, Mapping, Tuple
+from typing import Iterable, List, Mapping, Tuple, TypeVar
 
 FOLDER_LIST_T = List[str]
 SPLIT_POS_T = Tuple[int, ...]
@@ -13,6 +13,7 @@ WEIGHT_TUPLE_T = Tuple[float, ...]
 CACHE_T = dict[WEIGHT_TUPLE_T, float]
 SPLIT_POS_MAPPING_T = dict[WEIGHT_TUPLE_T, Tuple[int, ...]]
 WEIGHT_MAPPING_T = Mapping[str, float]
+T = TypeVar("T")
 
 
 class AccessType(Enum):
@@ -132,7 +133,8 @@ def iter_nsplits(nof_elems: int, num_splits: int) -> Iterable[SPLIT_POS_T]:
     """Yield all possible splits
 
     This function will generate all possible splits for the given number of
-    elements and split positions.
+    elements and split positions. Having nof_elems <= num_splits is illegal and
+    causes a ValueError to be raised.
 
     Parameters
     ----------
@@ -146,6 +148,11 @@ def iter_nsplits(nof_elems: int, num_splits: int) -> Iterable[SPLIT_POS_T]:
     -------
     Iterable[SPLIT_POS_T]
         Lazy stream of all possible split positions
+
+    Raises
+    ------
+    ValueError
+        If nof_elem <= num_splits
 
     Example:
     --------
@@ -179,6 +186,9 @@ def iter_nsplits(nof_elems: int, num_splits: int) -> Iterable[SPLIT_POS_T]:
                 start_idx=split_pos + 1,
                 start_tuple=new_tuple,
             )
+
+    if nof_elems <= num_splits:
+        raise ValueError
 
     yield from iter_nsplits_worker(
         nof_elems=nof_elems, num_splits=num_splits, start_idx=1, start_tuple=()
