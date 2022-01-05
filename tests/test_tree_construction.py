@@ -68,20 +68,6 @@ def test_single_element_is_not_splitted(
     assert split_positions == ()
 
 
-@given(elements=equal_weight_elements(min_size=2), branching_factor=branching_factors())
-def test_constant_costs_make_balanced_tree(
-    elements: tuple[float, ...], branching_factor: int
-) -> None:
-    access_type = AccessType.CONSTANT
-    costs = access_costs(branching_factor, access_type)
-    ratios = get_ratios(costs)
-    split_positions = get_ratio_splitpositions(elements, ratios)
-
-    distances = {v1 - v2 for (v1, v2) in zip(split_positions[1:], split_positions)}
-    distances.add(split_positions[0])
-    assert len(distances) <= 2
-
-
 @pytest.mark.parametrize("access_type", AccessType)
 def test_splits_before_last_huge_elem(access_type: AccessType) -> None:
     branching_factor = 4
