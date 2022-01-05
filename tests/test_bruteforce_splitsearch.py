@@ -113,29 +113,6 @@ def test_splits_before_and_past_huge_elem(access_type: AccessType) -> None:
     assert 8 in result_split
 
 
-# @given(
-#     access_type=hu.access_types(),
-#     elements=st.lists(st.just(1.0), min_size=1).map(tuple),
-# )
-# def test_branching_factor_is_exhausted(
-#     access_type: AccessType, elements: tuple[float, ...]
-# ) -> None:
-#     # This test should pass for small numbers of elements but fails there. It
-#     # is unclear whether it should pass for huge numbers of elements, say 10
-#     # but until it passes for few elements it can left as is.
-#     branching_factor = len(elements)
-#     split_positions = {}  # type: ignore
-
-#     expected = tuple(range(1, branching_factor))
-#     bruteforce(
-#         access_type=access_type,
-#         elements=elements,
-#         max_branching_factor=branching_factor,
-#         split_positions=split_positions,
-#     )
-#     assert split_positions == expected
-
-
 @pytest.mark.parametrize("access_type", AccessType)
 @pytest.mark.parametrize("nof_elems", [1, 2, 3, 4])
 def test_few_elements_are_splitted_elementwise(
