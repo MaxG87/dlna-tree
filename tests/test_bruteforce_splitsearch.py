@@ -133,13 +133,47 @@ def test_few_elements_are_splitted_elementwise(
     assert result_split == expected
 
 
-def test_wrappable_splits_seven_elems_optimal() -> None:
+def test_wrappable_splits_optimal_1() -> None:
     branching_factor = 4
     access_type = AccessType.WRAPPABLE
     split_positions = {}  # type: ignore
 
     elements = tuple([1.0] * 7)
     expected = (4, 5, 6)
+    bruteforce(
+        access_type=access_type,
+        elements=elements,
+        max_branching_factor=branching_factor,
+        split_positions=split_positions,
+    )
+    result_split = split_positions[elements]
+    assert result_split == expected
+
+
+def test_wrappable_splits_optimal_2() -> None:
+    branching_factor = 4
+    access_type = AccessType.WRAPPABLE
+    split_positions = {}  # type: ignore
+
+    elements = (1, 1, 10)
+    expected = (1, 2)
+    bruteforce(
+        access_type=access_type,
+        elements=elements,
+        max_branching_factor=branching_factor,
+        split_positions=split_positions,
+    )
+    result_split = split_positions[elements]
+    assert result_split == expected
+
+
+def test_wrappable_splits_optimal_3() -> None:
+    branching_factor = 4
+    access_type = AccessType.WRAPPABLE
+    split_positions = {}  # type: ignore
+
+    elements = (1, 1, 1, 1, 1, 10, 5, 1)
+    expected = (5, 6, 7)
     bruteforce(
         access_type=access_type,
         elements=elements,

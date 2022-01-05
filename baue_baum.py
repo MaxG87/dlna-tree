@@ -303,14 +303,14 @@ def bruteforce_worker(
         # abort recursion
         return BruteForceResult(costs_cache[elements], total_weight)
 
-    costs = list(
-        access_costs(max_branching_factor=max_branching_factor, access_type=access_type)
-    )
     best_split: SPLIT_POS_T = ()
     best_split_cost = float(0xCAFFEBABE)
 
     max_num_splits = min(max_branching_factor - 1, nof_elems - 1)
     for num_splits in range(1, max_num_splits + 1):
+        costs = list(
+            access_costs(max_branching_factor=num_splits + 1, access_type=access_type)
+        )
         for cur_split in iter_nsplits(nof_elems=nof_elems, num_splits=num_splits):
             subtree_results = []
             for sublist in split_to_lists(inlist=elements, insplit=cur_split):
