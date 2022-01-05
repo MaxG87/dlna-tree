@@ -549,7 +549,7 @@ def main() -> None:
     split_positions: SPLIT_POS_MAPPING_T = {}
     ratio_based_tree(
         access_type=access_type,
-        bruteforce_threshold=10,
+        bruteforce_threshold=40,
         costs_cache={},
         cwd=cwd,
         folder_list=folder_list,
