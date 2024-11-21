@@ -1,0 +1,9 @@
+[Unit]
+Description=Timer zur Neugenerierung der DLNA-Ordner
+
+[Timer]
+Unit=rebuild-minidlna.service
+OnCalendar=*-*-* 04:00:00
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=Regenerate DLNA directories
+
+[Service]
+Type=simple
+ExecStart=/opt/DLNA/dlna-einrichten.sh
+
+[Install]
+WantedBy=
